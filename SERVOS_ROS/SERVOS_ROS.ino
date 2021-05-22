@@ -3,17 +3,17 @@
 ****************************************************************************/
 
 #include <ros.h>
-#include <goal_strategy/servos_cmd.h>
+#include <krabi_msgs/servos_cmd.h>
 #include <VarSpeedServo.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 
 #define BRAK 0
-#define BRAK_PIN 10//Todo check
+#define BRAK_PIN 9
 #define PAVILLON 1
-#define PAVILLON_PIN 11//Todo check
+#define PAVILLON_PIN 10
 #define TAPETTE_PHARE 2
-#define TAPETTE_PHARE_PIN 9
+#define TAPETTE_PHARE_PIN 11
 #define NB_SERVOS 3
 
 ros::NodeHandle nh;
@@ -22,8 +22,9 @@ bool stopped = true;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 uint8_t current_score;
 
-void cmd_servos_cb(const goal_strategy::servos_cmd& command)
+void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
 {
+    current_score = command.s4_speed;// hack to store the score
     if (!command.enable) {
         if (!stopped) {
             for( int i = 0; i< NB_SERVOS; i++ ) {
@@ -44,7 +45,6 @@ void cmd_servos_cb(const goal_strategy::servos_cmd& command)
     myServos[BRAK].write(command.brak_angle, command.brak_speed, false);
     myServos[PAVILLON].write(command.pavillon_angle, command.pavillon_speed, false);
     myServos[TAPETTE_PHARE].write(command.s3_angle, command.s3_speed, false);
-    current_score = command.s4_speed;// hack to store the score
 }
 
 void drawLCD()
@@ -103,7 +103,7 @@ void createCrab()
     lcd.createChar(0, Crab1);
     lcd.createChar(1, Crab2);
 }
-ros::Subscriber<goal_strategy::servos_cmd> servos_cmd_sub("cmd_servos", cmd_servos_cb);
+ros::Subscriber<krabi_msgs::servos_cmd> servos_cmd_sub("cmd_servos", cmd_servos_cb);
 
 void setup()
 { 
