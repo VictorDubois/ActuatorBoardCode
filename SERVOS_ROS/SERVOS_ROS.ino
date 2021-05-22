@@ -22,6 +22,10 @@
 #define BALLOON_PIN 12
 #define NB_SERVOS 4
 
+#define BALLOON_PUMP_PIN 1
+#define BALLOON_VALVE_RED_PIN 2
+#define BALLOON_VALVE_GREEN_PIN 3
+
 ros::NodeHandle nh;
 VarSpeedServo myServos[NB_SERVOS];
 bool stopped = true;
@@ -47,6 +51,17 @@ inline void write_servo_cmd(VarSpeedServo& servo, const uint8_t pin, const krabi
     servo.write(command.angle, command.speed, false);
 }
 
+void write_balloon_pump_cmd(const krabi_msgs::balloon_pump& command)
+{
+    int value;
+    command.enable_pump ? value = HIGH : value = LOW;
+    digitalWrite(BALLOON_PUMP_PIN, value);
+    command.inflate_red ? value = HIGH : value = LOW;
+    digitalWrite(BALLOON_VALVE_RED_PIN, value);
+    command.inflate_green ? value = HIGH : value = LOW;
+    digitalWrite(BALLOON_VALVE_GREEN_PIN, value);
+}
+
 void actuators_cb(const krabi_msgs::actuators& command)
 {
     //current_score = command.s4_speed;// hack to store the score
@@ -54,6 +69,8 @@ void actuators_cb(const krabi_msgs::actuators& command)
     write_servo_cmd(myServos[PAVILLON], PAVILLON_PIN, command.pavillons);
     write_servo_cmd(myServos[TAPETTE_PHARE], TAPETTE_PHARE_PIN, command.phare_arm);
     write_servo_cmd(myServos[BALLOON], BALLOON_PIN, command.balloon_servo);
+
+    write_balloon_pump_cmd(command.balloon_pump);
 }
 
 void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
