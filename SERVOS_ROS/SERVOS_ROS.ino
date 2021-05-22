@@ -4,6 +4,10 @@
 
 #include <ros.h>
 #include <krabi_msgs/servos_cmd.h>
+#include <krabi_msgs/servo_cmd.h>
+#include <krabi_msgs/actuators.h>
+#include <krabi_msgs/balloon_pump.h>
+#include <krabi_msgs/vacuum_pump.h>
 #include <VarSpeedServo.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
@@ -14,13 +18,43 @@
 #define PAVILLON_PIN 10
 #define TAPETTE_PHARE 2
 #define TAPETTE_PHARE_PIN 11
-#define NB_SERVOS 3
+#define BALLOON 3
+#define BALLOON_PIN 12
+#define NB_SERVOS 4
 
 ros::NodeHandle nh;
 VarSpeedServo myServos[NB_SERVOS];
 bool stopped = true;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 uint8_t current_score;
+
+inline void write_servo_cmd(VarSpeedServo& servo, const uint8_t pin, const krabi_msgs::servo_cmd& command)
+{
+    if (not command.enable)
+    {
+        if (servo.attached())
+        {
+            servo.detach();
+        }
+        return;
+    }
+
+    if (command.enable && not servo.attached())
+    {
+        servo.attach(pin);
+    }
+    
+    servo.write(command.angle, command.speed, false);
+}
+
+void actuators_cb(const krabi_msgs::actuators& command)
+{
+    //current_score = command.s4_speed;// hack to store the score
+    write_servo_cmd(myServos[BRAK], BRAK_PIN, command.manche_a_air_arm);
+    write_servo_cmd(myServos[PAVILLON], PAVILLON_PIN, command.pavillons);
+    write_servo_cmd(myServos[TAPETTE_PHARE], TAPETTE_PHARE_PIN, command.phare_arm);
+    write_servo_cmd(myServos[BALLOON], BALLOON_PIN, command.balloon_servo);
+}
 
 void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
 {
@@ -104,6 +138,7 @@ void createCrab()
     lcd.createChar(1, Crab2);
 }
 ros::Subscriber<krabi_msgs::servos_cmd> servos_cmd_sub("cmd_servos", cmd_servos_cb);
+ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators", actuators_cb);
 
 void setup()
 { 
@@ -113,6 +148,7 @@ void setup()
     
     nh.initNode();
     nh.subscribe(servos_cmd_sub);
+    nh.subscribe(actuators_sub);
     current_score = 0;
     lcd.init();                      // initialize the lcd 
     lcd.backlight();
