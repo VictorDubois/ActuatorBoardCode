@@ -7,6 +7,7 @@
 #include <VarSpeedServo.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
+#include <Adafruit_PWMServoDriver.h>
 
 #define BRAK 0
 #define BRAK_PIN 9
@@ -15,6 +16,15 @@
 #define TAPETTE_PHARE 2
 #define TAPETTE_PHARE_PIN 11
 #define NB_SERVOS 3
+
+#define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX  600 // This is the 'maximum' pulse length count (out of 4096)
+#define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
+#define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
+#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 ros::NodeHandle nh;
 VarSpeedServo myServos[NB_SERVOS];
@@ -41,7 +51,9 @@ void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
         myServos[PAVILLON].attach(PAVILLON_PIN);
         myServos[TAPETTE_PHARE].attach(TAPETTE_PHARE_PIN);
     }
-
+    pwm.setPWM(BRAK_PIN, 0, map(command.brak_angle, 0, 255, SERVOMIN, SERVOMAX));
+    pwm.setPWM(PAVILLON_PIN, 0, map(command.pavillon_angle, 0, 255, SERVOMIN, SERVOMAX));
+    pwm.setPWM(TAPETTE_PHARE_PIN, 0, map(command.s3_angle, 0, 255, SERVOMIN, SERVOMAX));
     myServos[BRAK].write(command.brak_angle, command.brak_speed, false);
     myServos[PAVILLON].write(command.pavillon_angle, command.pavillon_speed, false);
     myServos[TAPETTE_PHARE].write(command.s3_angle, command.s3_speed, false);
@@ -107,6 +119,11 @@ ros::Subscriber<krabi_msgs::servos_cmd> servos_cmd_sub("cmd_servos", cmd_servos_
 
 void setup()
 { 
+    pwm.begin();
+    pwm.setOscillatorFrequency(27000000);
+    pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+
+    delay(10);
     pinMode(BRAK_PIN, OUTPUT);
     pinMode(PAVILLON_PIN, OUTPUT);
     pinMode(TAPETTE_PHARE_PIN, OUTPUT);
