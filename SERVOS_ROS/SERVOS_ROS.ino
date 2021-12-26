@@ -17,6 +17,9 @@
 #define TAPETTE_PHARE_PIN 11
 #define NB_SERVOS 3
 
+#define SUCTION_CUP_PIN 5
+#define VALVE_PIN 6
+
 #define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  600 // This is the 'maximum' pulse length count (out of 4096)
 #define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
@@ -54,6 +57,23 @@ void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
     pwm.setPWM(BRAK_PIN, 0, map(command.brak_angle, 0, 255, SERVOMIN, SERVOMAX));
     pwm.setPWM(PAVILLON_PIN, 0, map(command.pavillon_angle, 0, 255, SERVOMIN, SERVOMAX));
     pwm.setPWM(TAPETTE_PHARE_PIN, 0, map(command.s3_angle, 0, 255, SERVOMIN, SERVOMAX));
+
+    if (command.s4_speed&1)
+    {
+        digitalWrite(SUCTION_CUP_PIN, HIGH);
+    }
+    else
+    {
+        digitalWrite(SUCTION_CUP_PIN, LOW);
+    }
+    if (command.s4_speed&2)
+    {
+        digitalWrite(VALVE_PIN, HIGH);
+    }
+    else
+    {
+        digitalWrite(VALVE_PIN, LOW);
+    }
     myServos[BRAK].write(command.brak_angle, command.brak_speed, false);
     myServos[PAVILLON].write(command.pavillon_angle, command.pavillon_speed, false);
     myServos[TAPETTE_PHARE].write(command.s3_angle, command.s3_speed, false);
@@ -127,11 +147,15 @@ void setup()
     pinMode(BRAK_PIN, OUTPUT);
     pinMode(PAVILLON_PIN, OUTPUT);
     pinMode(TAPETTE_PHARE_PIN, OUTPUT);
+    pinMode(SUCTION_CUP_PIN, OUTPUT);
+    pinMode(VALVE_PIN, OUTPUT);
     
+    digitalWrite(SUCTION_CUP_PIN, HIGH);
+    digitalWrite(VALVE_PIN, HIGH);
     nh.initNode();
     nh.subscribe(servos_cmd_sub);
     current_score = 0;
-    lcd.init();                      // initialize the lcd 
+    lcd.begin();                      // initialize the lcd 
     lcd.backlight();
     createCrab();
     lcd.setCursor(0,0);
