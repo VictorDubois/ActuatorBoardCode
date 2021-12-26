@@ -34,11 +34,36 @@ VarSpeedServo myServos[NB_SERVOS];
 bool stopped = true;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 uint8_t current_score;
+krabi_msgs::servos_cmd persistent_command;
+uint16_t sent_servos_angles[NB_SERVOS];
 
 void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
 {
+    persistent_command = command;
     current_score = command.s4_speed;// hack to store the score
-    if (!command.enable) {
+}
+
+void write_servo_cmd(uint8_t servo_id, uint8_t servo_pin, uint16_t servo_cmd_angle, uint16_t servo_cmd_speed)
+{
+    if (servo_cmd_angle > sent_servos_angles[servo_id] + servo_cmd_speed)
+    {
+        sent_servos_angles[servo_id] += servo_cmd_speed;
+    }
+    else if (servo_cmd_angle < sent_servos_angles[servo_id] - servo_cmd_speed)
+    {
+        sent_servos_angles[servo_id] -= servo_cmd_speed;
+    }
+    else
+    {
+        sent_servos_angles[servo_id] = servo_cmd_angle;
+    }
+    pwm.setPWM(servo_pin, 0, map(sent_servos_angles[servo_id], 0, 255, SERVOMIN, SERVOMAX));
+    myServos[servo_id].write(servo_cmd_angle, servo_cmd_speed, false);
+}
+
+void update_servos()
+{
+    if (!persistent_command.enable) {
         if (!stopped) {
             for( int i = 0; i< NB_SERVOS; i++ ) {
                 myServos[i].detach();
@@ -54,11 +79,12 @@ void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
         myServos[PAVILLON].attach(PAVILLON_PIN);
         myServos[TAPETTE_PHARE].attach(TAPETTE_PHARE_PIN);
     }
-    pwm.setPWM(BRAK_PIN, 0, map(command.brak_angle, 0, 255, SERVOMIN, SERVOMAX));
-    pwm.setPWM(PAVILLON_PIN, 0, map(command.pavillon_angle, 0, 255, SERVOMIN, SERVOMAX));
-    pwm.setPWM(TAPETTE_PHARE_PIN, 0, map(command.s3_angle, 0, 255, SERVOMIN, SERVOMAX));
 
-    if (command.s4_speed&1)
+    write_servo_cmd(BRAK, BRAK_PIN, persistent_command.brak_angle, persistent_command.brak_speed);
+    write_servo_cmd(PAVILLON, PAVILLON_PIN, persistent_command.pavillon_angle, persistent_command.pavillon_speed);
+    write_servo_cmd(TAPETTE_PHARE, TAPETTE_PHARE_PIN, persistent_command.s3_angle, persistent_command.s3_speed);
+
+    if (persistent_command.s4_speed&1)
     {
         digitalWrite(SUCTION_CUP_PIN, HIGH);
     }
@@ -66,7 +92,7 @@ void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
     {
         digitalWrite(SUCTION_CUP_PIN, LOW);
     }
-    if (command.s4_speed&2)
+    if (persistent_command.s4_speed&2)
     {
         digitalWrite(VALVE_PIN, HIGH);
     }
@@ -74,9 +100,6 @@ void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
     {
         digitalWrite(VALVE_PIN, LOW);
     }
-    myServos[BRAK].write(command.brak_angle, command.brak_speed, false);
-    myServos[PAVILLON].write(command.pavillon_angle, command.pavillon_speed, false);
-    myServos[TAPETTE_PHARE].write(command.s3_angle, command.s3_speed, false);
 }
 
 void drawLCD()
@@ -139,6 +162,9 @@ ros::Subscriber<krabi_msgs::servos_cmd> servos_cmd_sub("cmd_servos", cmd_servos_
 
 void setup()
 { 
+    for(int i = 0; i < NB_SERVOS; i++) {
+        sent_servos_angles[i] = 180;
+    }
     pwm.begin();
     pwm.setOscillatorFrequency(27000000);
     pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
@@ -159,16 +185,16 @@ void setup()
     lcd.backlight();
     createCrab();
     lcd.setCursor(0,0);
-lcd.write(byte(0));
-lcd.write(byte(0));
-lcd.write(byte(0));
+    lcd.write(byte(0));
+    lcd.write(byte(0));
+    lcd.write(byte(0));
     
     lcd.setCursor(4,0);
     lcd.print("Kraboss");
     lcd.setCursor(13,0);
-lcd.write(byte(0));
-lcd.write(byte(1));
-lcd.write(byte(0));
+    lcd.write(byte(0));
+    lcd.write(byte(1));
+    lcd.write(byte(0));
     lcd.setCursor(7,1);
     lcd.print("Score:");
     
@@ -178,5 +204,9 @@ void loop()
 {
     nh.spinOnce();
     drawLCD();
-    delay(50);
+    for (int i = 0; i < 10; i++)
+    {
+        update_servos();
+        delay(5);
+    }
 }
