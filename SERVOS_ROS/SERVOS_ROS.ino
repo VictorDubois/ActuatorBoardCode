@@ -35,7 +35,8 @@ bool stopped = true;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 uint8_t current_score;
 krabi_msgs::servos_cmd persistent_command;
-uint16_t sent_servos_angles[NB_SERVOS];
+int16_t sent_servos_angles[NB_SERVOS];
+uint8_t servo_pins[NB_SERVOS];
 
 void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
 {
@@ -43,8 +44,13 @@ void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
     current_score = command.s4_speed;// hack to store the score
 }
 
-void write_servo_cmd(uint8_t servo_id, uint8_t servo_pin, uint16_t servo_cmd_angle, uint16_t servo_cmd_speed)
+void write_servo_cmd(uint8_t servo_id, int16_t servo_cmd_angle, int16_t servo_cmd_speed)
 {
+    if (servo_cmd_angle == sent_servos_angles[servo_id])
+    {
+      return;
+    }
+    delay(50);
     if (servo_cmd_angle > sent_servos_angles[servo_id] + servo_cmd_speed)
     {
         sent_servos_angles[servo_id] += servo_cmd_speed;
@@ -57,8 +63,8 @@ void write_servo_cmd(uint8_t servo_id, uint8_t servo_pin, uint16_t servo_cmd_ang
     {
         sent_servos_angles[servo_id] = servo_cmd_angle;
     }
-    pwm.setPWM(servo_pin, 0, map(sent_servos_angles[servo_id], 0, 255, SERVOMIN, SERVOMAX));
-    myServos[servo_id].write(servo_cmd_angle, servo_cmd_speed, false);
+    pwm.setPWM(servo_pins[servo_id], 0, map(sent_servos_angles[servo_id], 0, 255, SERVOMIN, SERVOMAX));
+    //myServos[servo_id].write(servo_cmd_angle, servo_cmd_speed, false);
 }
 
 void update_servos()
@@ -67,6 +73,7 @@ void update_servos()
         if (!stopped) {
             for( int i = 0; i< NB_SERVOS; i++ ) {
                 myServos[i].detach();
+                pwm.setPin(servo_pins[i],0,false);
             }
         }
         stopped = true;
@@ -79,7 +86,6 @@ void update_servos()
         myServos[PAVILLON].attach(PAVILLON_PIN);
         myServos[TAPETTE_PHARE].attach(TAPETTE_PHARE_PIN);
     }
-
     write_servo_cmd(BRAK, BRAK_PIN, persistent_command.brak_angle, persistent_command.brak_speed);
     write_servo_cmd(PAVILLON, PAVILLON_PIN, persistent_command.pavillon_angle, persistent_command.pavillon_speed);
     write_servo_cmd(TAPETTE_PHARE, TAPETTE_PHARE_PIN, persistent_command.s3_angle, persistent_command.s3_speed);
@@ -165,6 +171,11 @@ void setup()
     for(int i = 0; i < NB_SERVOS; i++) {
         sent_servos_angles[i] = 180;
     }
+    
+    servo_pins[BRAK] = BRAK_PIN;
+    servo_pins[PAVILLON] = PAVILLON_PIN;
+    servo_pins[TAPETTE_PHARE] = TAPETTE_PHARE_PIN;
+
     pwm.begin();
     pwm.setOscillatorFrequency(27000000);
     pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
@@ -181,7 +192,7 @@ void setup()
     nh.initNode();
     nh.subscribe(servos_cmd_sub);
     current_score = 0;
-    lcd.begin();                      // initialize the lcd 
+    lcd.init();                      // initialize the lcd 
     lcd.backlight();
     createCrab();
     lcd.setCursor(0,0);
@@ -202,11 +213,11 @@ void setup()
 
 void loop()
 {
-    nh.spinOnce();
     drawLCD();
     for (int i = 0; i < 10; i++)
     {
+        nh.spinOnce();
         update_servos();
-        delay(5);
     }
+    delay(5);
 }
