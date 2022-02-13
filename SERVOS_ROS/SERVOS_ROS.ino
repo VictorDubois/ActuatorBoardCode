@@ -73,7 +73,7 @@ void update_servos()
         if (!stopped) {
             for( int i = 0; i< NB_SERVOS; i++ ) {
                 myServos[i].detach();
-                pwm.setPin(servo_pins[i],0,false);
+                pwm.setPin(servo_pins[i],0,true);
             }
         }
         stopped = true;
@@ -86,9 +86,9 @@ void update_servos()
         myServos[PAVILLON].attach(PAVILLON_PIN);
         myServos[TAPETTE_PHARE].attach(TAPETTE_PHARE_PIN);
     }
-    write_servo_cmd(BRAK, BRAK_PIN, persistent_command.brak_angle, persistent_command.brak_speed);
-    write_servo_cmd(PAVILLON, PAVILLON_PIN, persistent_command.pavillon_angle, persistent_command.pavillon_speed);
-    write_servo_cmd(TAPETTE_PHARE, TAPETTE_PHARE_PIN, persistent_command.s3_angle, persistent_command.s3_speed);
+    write_servo_cmd(BRAK, persistent_command.brak_angle, persistent_command.brak_speed);
+    write_servo_cmd(PAVILLON, persistent_command.pavillon_angle, persistent_command.pavillon_speed);
+    write_servo_cmd(TAPETTE_PHARE, persistent_command.s3_angle, persistent_command.s3_speed);
 
     if (persistent_command.s4_speed&1)
     {
@@ -169,7 +169,7 @@ ros::Subscriber<krabi_msgs::servos_cmd> servos_cmd_sub("cmd_servos", cmd_servos_
 void setup()
 { 
     for(int i = 0; i < NB_SERVOS; i++) {
-        sent_servos_angles[i] = 180;
+        sent_servos_angles[i] = 100;
     }
     
     servo_pins[BRAK] = BRAK_PIN;
