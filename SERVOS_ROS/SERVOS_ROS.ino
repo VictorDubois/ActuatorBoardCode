@@ -7,7 +7,6 @@
 #include <krabi_msgs/actuators.h>
 #include <krabi_msgs/vacuum_pump.h>
 
-#include <VarSpeedServo.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_PWMServoDriver.h>
@@ -35,7 +34,6 @@
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 ros::NodeHandle nh;
-VarSpeedServo myServos[NB_SERVOS];
 bool stopped = true;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 uint8_t current_score;
@@ -64,7 +62,6 @@ void write_servo_cmd(uint8_t servo_id, int16_t servo_cmd_angle, int16_t servo_cm
         sent_servos_angles[servo_id] = servo_cmd_angle;
     }
     pwm.setPWM(servo_pins[servo_id], 0, map(sent_servos_angles[servo_id], 0, 255, SERVOMIN, SERVOMAX));
-    //myServos[servo_id].write(servo_cmd_angle, servo_cmd_speed, false);
 }
 
 
@@ -80,7 +77,6 @@ void write_servo_cmd_from_actuator(uint8_t servo_id, const krabi_msgs::servo_cmd
   {
     if (!stopped_servos_last_update[servo_id])
     {
-      myServos[servo_id].detach();
       pwm.setPin(servo_pins[servo_id], 0, true);
     }
     stopped_servos_last_update[servo_id] = true;
@@ -89,18 +85,17 @@ void write_servo_cmd_from_actuator(uint8_t servo_id, const krabi_msgs::servo_cmd
   if(stopped_servos_last_update[servo_id])
   {
     stopped_servos_last_update[servo_id] = false;
-    myServos[servo_id].attach(servo_pins[servo_id]);
   }
   write_servo_cmd(servo_id, command.angle, command.speed); 
 }
 
 void update_actuators()
 {
-    write_servo_cmd_from_actuator(BASE_SERVO, persistent_actuators_command.arm_base_servo);
+    /*write_servo_cmd_from_actuator(BASE_SERVO, persistent_actuators_command.arm_base_servo);
     write_servo_cmd_from_actuator(MID_SERVO, persistent_actuators_command.arm_mid_servo);
     write_servo_cmd_from_actuator(SUCTION_SERVO, persistent_actuators_command.arm_suction_cup_servo);
     write_servo_cmd_from_actuator(PUSHER_SERVO, persistent_actuators_command.pusher_servo);
-
+*/
     digitalWrite(SUCTION_CUP_PIN, persistent_actuators_command.arm_vacuum.enable_pump);
     digitalWrite(VALVE_PIN, persistent_actuators_command.arm_vacuum.release);
 }
@@ -161,7 +156,7 @@ void createCrab()
     lcd.createChar(0, Crab1);
     lcd.createChar(1, Crab2);
 }
-ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators", actuators_cb);
+ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators_msg", actuators_cb);
 
 void setup()
 { 
