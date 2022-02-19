@@ -3,7 +3,6 @@
 ****************************************************************************/
 
 #include <ros.h>
-#include <krabi_msgs/servos_cmd.h>
 #include <krabi_msgs/servo_cmd.h>
 #include <krabi_msgs/actuators.h>
 #include <krabi_msgs/vacuum_pump.h>
@@ -40,17 +39,10 @@ VarSpeedServo myServos[NB_SERVOS];
 bool stopped = true;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 uint8_t current_score;
-krabi_msgs::servos_cmd persistent_command;
 krabi_msgs::actuators persistent_actuators_command;
 int16_t sent_servos_angles[NB_SERVOS];
 uint8_t servo_pins[NB_SERVOS];
 bool stopped_servos_last_update[NB_SERVOS];
-
-void cmd_servos_cb(const krabi_msgs::servos_cmd& command)
-{
-    persistent_command = command;
-    current_score = command.s4_speed;// hack to store the score
-}
 
 void write_servo_cmd(uint8_t servo_id, int16_t servo_cmd_angle, int16_t servo_cmd_speed)
 {
@@ -113,47 +105,6 @@ void update_actuators()
     digitalWrite(VALVE_PIN, persistent_actuators_command.arm_vacuum.release);
 }
 
-void update_servos()
-{
-    if (!persistent_command.enable) {
-        if (!stopped) {
-            for( int i = 0; i< NB_SERVOS; i++ ) {
-                myServos[i].detach();
-                pwm.setPin(servo_pins[i],0,true);
-            }
-        }
-        stopped = true;
-        return;
-    }
-    if(stopped)
-    {
-        stopped = false;
-        for( int i = 0; i< NB_SERVOS; i++ ) {
-            myServos[i].attach(servo_pins[i]);
-        }
-    }
-    write_servo_cmd(BASE_SERVO, persistent_command.brak_angle, persistent_command.brak_speed);
-    write_servo_cmd(MID_SERVO, persistent_command.pavillon_angle, persistent_command.pavillon_speed);
-    write_servo_cmd(SUCTION_SERVO, persistent_command.s3_angle, persistent_command.s3_speed);
-
-    if (persistent_command.s4_speed&1)
-    {
-        digitalWrite(SUCTION_CUP_PIN, HIGH);
-    }
-    else
-    {
-        digitalWrite(SUCTION_CUP_PIN, LOW);
-    }
-    if (persistent_command.s4_speed&2)
-    {
-        digitalWrite(VALVE_PIN, HIGH);
-    }
-    else
-    {
-        digitalWrite(VALVE_PIN, LOW);
-    }
-}
-
 void drawLCD()
 {
     // Print a message to the LCD.
@@ -210,14 +161,23 @@ void createCrab()
     lcd.createChar(0, Crab1);
     lcd.createChar(1, Crab2);
 }
-ros::Subscriber<krabi_msgs::servos_cmd> servos_cmd_sub("cmd_servos", cmd_servos_cb);
 ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators", actuators_cb);
 
 void setup()
 { 
     for(int i = 0; i < NB_SERVOS; i++) {
         sent_servos_angles[i] = 100;
+        stopped_servos_last_update[i] = true;
     }
+
+    persistent_actuators_command.arm_base_servo.enable = false;
+    persistent_actuators_command.arm_mid_servo.enable = false;
+    persistent_actuators_command.arm_suction_cup_servo.enable = false;
+    persistent_actuators_command.pusher_servo.enable = false;
+    persistent_actuators_command.arm_vacuum.enable_pump = false;
+    persistent_actuators_command.arm_vacuum.release = true;
+    persistent_actuators_command.fake_statuette_vacuum.enable_pump = false;
+    persistent_actuators_command.fake_statuette_vacuum.release = true;
 
     servo_pins[BASE_SERVO] = BASE_SERVO_PIN;
     servo_pins[MID_SERVO] = MID_SERVO_PIN;
@@ -239,7 +199,6 @@ void setup()
     digitalWrite(SUCTION_CUP_PIN, HIGH);
     digitalWrite(VALVE_PIN, HIGH);
     nh.initNode();
-    nh.subscribe(servos_cmd_sub);
     nh.subscribe(actuators_sub);
     current_score = 0;
     lcd.init();                      // initialize the lcd 
@@ -267,7 +226,7 @@ void loop()
     for (int i = 0; i < 10; i++)
     {
         nh.spinOnce();
-        update_servos();
+        update_actuators();
     }
     delay(5);
 }
