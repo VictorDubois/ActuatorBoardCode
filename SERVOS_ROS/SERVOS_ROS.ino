@@ -21,8 +21,8 @@
 #define PUSHER_SERVO_PIN 3
 #define NB_SERVOS 4
 
-#define SUCTION_CUP_PIN 5
-#define VALVE_PIN 6
+#define SUCTION_CUP_PIN 6
+#define VALVE_PIN 5
 
 #define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  600 // This is the 'maximum' pulse length count (out of 4096)
@@ -91,13 +91,13 @@ void write_servo_cmd_from_actuator(uint8_t servo_id, const krabi_msgs::servo_cmd
 
 void update_actuators()
 {
-    /*write_servo_cmd_from_actuator(BASE_SERVO, persistent_actuators_command.arm_base_servo);
+    write_servo_cmd_from_actuator(BASE_SERVO, persistent_actuators_command.arm_base_servo);
     write_servo_cmd_from_actuator(MID_SERVO, persistent_actuators_command.arm_mid_servo);
     write_servo_cmd_from_actuator(SUCTION_SERVO, persistent_actuators_command.arm_suction_cup_servo);
     write_servo_cmd_from_actuator(PUSHER_SERVO, persistent_actuators_command.pusher_servo);
-*/
-    digitalWrite(SUCTION_CUP_PIN, persistent_actuators_command.arm_vacuum.enable_pump);
-    digitalWrite(VALVE_PIN, persistent_actuators_command.arm_vacuum.release);
+
+    digitalWrite(SUCTION_CUP_PIN, !persistent_actuators_command.arm_vacuum.enable_pump);
+    digitalWrite(VALVE_PIN, !persistent_actuators_command.arm_vacuum.release);
 }
 
 void drawLCD()
@@ -160,6 +160,22 @@ ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators_msg", actuators_
 
 void setup()
 { 
+    lcd.init();                      // initialize the lcd 
+    lcd.backlight();
+    createCrab();
+    lcd.setCursor(0,0);
+    lcd.write(byte(0));
+    lcd.write(byte(0));
+    lcd.write(byte(0));
+    
+    lcd.setCursor(4,0);
+    lcd.print("Kraboss");
+    lcd.setCursor(13,0);
+    lcd.write(byte(0));
+    lcd.write(byte(1));
+    lcd.write(byte(0));
+    lcd.setCursor(7,1);
+    lcd.print("Score:");
     for(int i = 0; i < NB_SERVOS; i++) {
         sent_servos_angles[i] = 100;
         stopped_servos_last_update[i] = true;
@@ -179,9 +195,9 @@ void setup()
     servo_pins[SUCTION_SERVO] = SUCTION_SERVO_PIN;
     servo_pins[PUSHER_SERVO] = PUSHER_SERVO_PIN;
 
-    pwm.begin();
-    pwm.setOscillatorFrequency(27000000);
-    pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+    //pwm.begin();
+    //pwm.setOscillatorFrequency(27000000);
+    //pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
     delay(10);
     pinMode(BASE_SERVO_PIN, OUTPUT);
@@ -196,22 +212,6 @@ void setup()
     nh.initNode();
     nh.subscribe(actuators_sub);
     current_score = 0;
-    lcd.init();                      // initialize the lcd 
-    lcd.backlight();
-    createCrab();
-    lcd.setCursor(0,0);
-    lcd.write(byte(0));
-    lcd.write(byte(0));
-    lcd.write(byte(0));
-    
-    lcd.setCursor(4,0);
-    lcd.print("Kraboss");
-    lcd.setCursor(13,0);
-    lcd.write(byte(0));
-    lcd.write(byte(1));
-    lcd.write(byte(0));
-    lcd.setCursor(7,1);
-    lcd.print("Score:");
     
 }
 
@@ -221,6 +221,7 @@ void loop()
     for (int i = 0; i < 10; i++)
     {
         nh.spinOnce();
+        //pwm.setPWM(servo_pins[0], 0, map(100, 0, 255, SERVOMIN, SERVOMAX));
         update_actuators();
     }
     delay(5);
