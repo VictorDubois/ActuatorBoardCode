@@ -17,9 +17,14 @@
 #define MID_SERVO_PIN 10
 #define SUCTION_SERVO 2
 #define SUCTION_SERVO_PIN 11
-#define PUSHER_SERVO 2
-#define PUSHER_SERVO_PIN 3
+#define PUSHER_SERVO 3
+#define PUSHER_SERVO_PIN 8
 #define NB_SERVOS 4
+
+  //cote 8: 100 => vertical, 180 => haut
+  //bras_bas 10: 75 => vertical, 200 => bas  
+  //bras_mid 9: 30 => vertical, 150 => bas
+  //bras_high 11: 128 => vertical, 230 => bas
 
 #define SUCTION_CUP_PIN 6
 #define VALVE_PIN 5
@@ -75,10 +80,10 @@ void write_servo_cmd_from_actuator(uint8_t servo_id, const krabi_msgs::servo_cmd
 {
   if (!command.enable)
   {
-    if (!stopped_servos_last_update[servo_id])
+  /*  if (!stopped_servos_last_update[servo_id])
     {
       pwm.setPin(servo_pins[servo_id], 0, true);
-    }
+    }*/
     stopped_servos_last_update[servo_id] = true;
     return;
   }
@@ -160,6 +165,13 @@ ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators_msg", actuators_
 
 void setup()
 { 
+    Serial.begin(57600);
+
+    nh.initNode();
+    nh.subscribe(actuators_sub);
+    nh.spinOnce();
+
+
     lcd.init();                      // initialize the lcd 
     lcd.backlight();
     createCrab();
@@ -188,16 +200,16 @@ void setup()
     persistent_actuators_command.arm_vacuum.enable_pump = false;
     persistent_actuators_command.arm_vacuum.release = true;
     persistent_actuators_command.fake_statuette_vacuum.enable_pump = false;
-    persistent_actuators_command.fake_statuette_vacuum.release = true;
+    persistent_actuators_command.fake_statuette_vacuum.release = false;
 
     servo_pins[BASE_SERVO] = BASE_SERVO_PIN;
     servo_pins[MID_SERVO] = MID_SERVO_PIN;
     servo_pins[SUCTION_SERVO] = SUCTION_SERVO_PIN;
     servo_pins[PUSHER_SERVO] = PUSHER_SERVO_PIN;
 
-    //pwm.begin();
-    //pwm.setOscillatorFrequency(27000000);
-    //pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+    pwm.begin();
+    pwm.setOscillatorFrequency(27000000);
+    pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
     delay(10);
     pinMode(BASE_SERVO_PIN, OUTPUT);
@@ -207,10 +219,10 @@ void setup()
     pinMode(SUCTION_CUP_PIN, OUTPUT);
     pinMode(VALVE_PIN, OUTPUT);
     
-    digitalWrite(SUCTION_CUP_PIN, HIGH);
-    digitalWrite(VALVE_PIN, HIGH);
-    nh.initNode();
-    nh.subscribe(actuators_sub);
+    //digitalWrite(SUCTION_CUP_PIN, HIGH);
+    //digitalWrite(VALVE_PIN, HIGH);
+
+
     current_score = 0;
     
 }
