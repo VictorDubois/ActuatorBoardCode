@@ -9,7 +9,7 @@
 
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-#include <Adafruit_PWMServoDriver.h>
+#include <VarSpeedServo.h> 
 
 #define BASE_SERVO 0
 #define BASE_SERVO_PIN 9
@@ -18,7 +18,7 @@
 #define SUCTION_SERVO 2
 #define SUCTION_SERVO_PIN 11
 #define PUSHER_SERVO 3
-#define PUSHER_SERVO_PIN 8
+#define PUSHER_SERVO_PIN 6
 #define NB_SERVOS 4
 
   //cote 8: 100 => vertical, 180 => haut
@@ -26,8 +26,8 @@
   //bras_mid 9: 30 => vertical, 150 => bas
   //bras_high 11: 128 => vertical, 230 => bas
 
-#define SUCTION_CUP_PIN 6
-#define VALVE_PIN 5
+#define SUCTION_CUP_PIN 8
+#define VALVE_PIN 2
 
 #define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  600 // This is the 'maximum' pulse length count (out of 4096)
@@ -35,8 +35,6 @@
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
-
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 ros::NodeHandle nh;
 bool stopped = true;
@@ -46,6 +44,7 @@ krabi_msgs::actuators persistent_actuators_command;
 int16_t sent_servos_angles[NB_SERVOS];
 uint8_t servo_pins[NB_SERVOS];
 bool stopped_servos_last_update[NB_SERVOS];
+VarSpeedServo myservos[NB_SERVOS];
 
 void write_servo_cmd(uint8_t servo_id, int16_t servo_cmd_angle, int16_t servo_cmd_speed)
 {
@@ -66,7 +65,9 @@ void write_servo_cmd(uint8_t servo_id, int16_t servo_cmd_angle, int16_t servo_cm
     {
         sent_servos_angles[servo_id] = servo_cmd_angle;
     }
-    pwm.setPWM(servo_pins[servo_id], 0, map(sent_servos_angles[servo_id], 0, 255, SERVOMIN, SERVOMAX));
+    //pwm.setPWM(servo_pins[servo_id], 0, map(sent_servos_angles[servo_id], 0, 255, SERVOMIN, SERVOMAX));
+    myservos[servo_id].write(sent_servos_angles[servo_id]);
+    
 }
 
 
@@ -101,8 +102,8 @@ void update_actuators()
     write_servo_cmd_from_actuator(SUCTION_SERVO, persistent_actuators_command.arm_suction_cup_servo);
     write_servo_cmd_from_actuator(PUSHER_SERVO, persistent_actuators_command.pusher_servo);
 
-    digitalWrite(SUCTION_CUP_PIN, !persistent_actuators_command.arm_vacuum.enable_pump);
-    digitalWrite(VALVE_PIN, !persistent_actuators_command.arm_vacuum.release);
+    digitalWrite(SUCTION_CUP_PIN, persistent_actuators_command.arm_vacuum.enable_pump);
+    digitalWrite(VALVE_PIN, persistent_actuators_command.arm_vacuum.release);
 }
 
 void drawLCD()
@@ -207,9 +208,10 @@ void setup()
     servo_pins[SUCTION_SERVO] = SUCTION_SERVO_PIN;
     servo_pins[PUSHER_SERVO] = PUSHER_SERVO_PIN;
 
-    pwm.begin();
-    pwm.setOscillatorFrequency(27000000);
-    pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+    for (int i = 0; i < NB_SERVOS ; i++)
+    {
+        myservos[i].attach(servo_pins[i]);
+    }
 
     delay(10);
     pinMode(BASE_SERVO_PIN, OUTPUT);
@@ -233,7 +235,6 @@ void loop()
     for (int i = 0; i < 10; i++)
     {
         nh.spinOnce();
-        //pwm.setPWM(servo_pins[0], 0, map(100, 0, 255, SERVOMIN, SERVOMAX));
         update_actuators();
     }
     delay(5);
