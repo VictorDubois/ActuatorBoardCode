@@ -16,10 +16,19 @@
 #define MID_SERVO 1
 #define MID_SERVO_PIN 10
 #define SUCTION_SERVO 2
-#define SUCTION_SERVO_PIN 11
+#define SUCTION_SERVO_PIN 5
 #define PUSHER_SERVO 3
 #define PUSHER_SERVO_PIN 6
 #define NB_SERVOS 4
+
+// 3 J5
+// 5 J6
+// 6 J7
+// 7 J18
+// 13 J19
+// 9 J8
+// 10 J9
+// 11 J10
 
   //cote 8: 100 => vertical, 180 => haut
   //bras_bas 10: 75 => vertical, 200 => bas  
@@ -164,18 +173,8 @@ void createCrab()
 }
 ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators_msg", actuators_cb);
 
-void setup()
-{ 
-    Serial.begin(57600);
-
-    nh.initNode();
-    nh.subscribe(actuators_sub);
-    nh.spinOnce();
-
-
-    lcd.init();                      // initialize the lcd 
-    lcd.backlight();
-    createCrab();
+void writeFullScreen()
+{
     lcd.setCursor(0,0);
     lcd.write(byte(0));
     lcd.write(byte(0));
@@ -189,6 +188,21 @@ void setup()
     lcd.write(byte(0));
     lcd.setCursor(7,1);
     lcd.print("Score:");
+}
+
+void setup()
+{ 
+    Serial.begin(57600);
+
+    nh.initNode();
+    nh.subscribe(actuators_sub);
+    nh.spinOnce();
+
+
+    lcd.init();                      // initialize the lcd 
+    lcd.backlight();
+    createCrab();
+    writeFullScreen();
     for(int i = 0; i < NB_SERVOS; i++) {
         sent_servos_angles[i] = 100;
         stopped_servos_last_update[i] = true;
@@ -231,11 +245,15 @@ void setup()
 
 void loop()
 {
+  writeFullScreen();
+  for (int i = 0; i < 10; i++)
+  {
     drawLCD();
-    for (int i = 0; i < 10; i++)
+    for (int j = 0; j < 10; j++)
     {
         nh.spinOnce();
         update_actuators();
     }
     delay(5);
+  }
 }
