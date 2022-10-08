@@ -9,8 +9,8 @@
 #include <std_msgs/Float32.h>
 
 #include <Wire.h> 
-#include <LiquidCrystal_I2C.h>
-#include <VarSpeedServo.h> 
+#include <LiquidCrystal_I2C.h> // https://github.com/johnrickman/LiquidCrystal_I2C
+#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
 
 #define BASE_SERVO 0
 #define BASE_SERVO_PIN 9
