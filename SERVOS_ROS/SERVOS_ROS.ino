@@ -12,6 +12,43 @@
 #include <LiquidCrystal_I2C.h> // https://github.com/johnrickman/LiquidCrystal_I2C
 #include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
 
+////// NeoPixel
+// NEOPIXEL BEST PRACTICES for most reliable operation:
+// - Add 1000 uF CAPACITOR between NeoPixel strip's + and - connections.
+// - MINIMIZE WIRING LENGTH between microcontroller board and first pixel.
+// - NeoPixel strip's DATA-IN should pass through a 300-500 OHM RESISTOR.
+// - AVOID connecting NeoPixels on a LIVE CIRCUIT. If you must, ALWAYS
+//   connect GROUND (-) first, then +, then data.
+// - When using a 3.3V microcontroller with a 5V-powered NeoPixel strip,
+//   a LOGIC-LEVEL CONVERTER on the data line is STRONGLY RECOMMENDED.
+// (Skipping these may work OK on your workbench but can fail in the field)
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+ #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
+#endif
+#define LED_PIN 4
+#define LED_COUNT 60
+// Declare our NeoPixel strip object:
+Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+// Argument 1 = Number of pixels in NeoPixel strip
+// Argument 2 = Arduino pin number (most are valid)
+// Argument 3 = Pixel type flags, add together as needed:
+//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+//   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
+unsigned long pixelPrevious = 0;        // Previous Pixel Millis
+unsigned long patternPrevious = 0;      // Previous Pattern Millis
+int           patternCurrent = 0;       // Current Pattern Number
+int           patternInterval = 5000;   // Pattern Interval (ms)
+int           pixelInterval = 50;       // Pixel Interval (ms)
+int           pixelQueue = 0;           // Pattern Pixel Queue
+int           pixelCycle = 0;           // Pattern Pixel Cycle
+uint16_t      pixelCurrent = 0;         // Pattern Current Pixel Number
+uint16_t      pixelNumber = LED_COUNT;  // Total Number of Pixels
+// end NeoPixel
+
 #define BASE_SERVO 0
 #define BASE_SERVO_PIN 9
 #define MID_SERVO 1
@@ -50,6 +87,7 @@ int16_t sent_servos_angles[NB_SERVOS];
 uint8_t servo_pins[NB_SERVOS];
 bool stopped_servos_last_update[NB_SERVOS];
 VarSpeedServo myservos[NB_SERVOS];
+bool disguise = false;
 
 
 /*
@@ -133,7 +171,7 @@ double readPressure()
     return pressure;
 }
 
-//----write One Byte of Data,Data from Arduino to the sensor----
+//----write One Byte of Data, Data from Arduino to the sensor----
 // Write "thedata" to the sensor's address of "addr"
 void write_one_byte(uint8_t device_address, uint8_t addr, uint8_t thedata)
 {
@@ -143,7 +181,7 @@ void write_one_byte(uint8_t device_address, uint8_t addr, uint8_t thedata)
   Wire.endTransmission();
 }
 
-//----Read One Byte of Data,Data from the sensor to the Arduino ---- 
+//----Read One Byte of Data, Data from the sensor to the Arduino ---- 
 uint8_t Read_One_Byte(uint8_t device_address, uint8_t addr)
 {
   uint8_t nb_bytes = 1;
@@ -212,6 +250,8 @@ void update_actuators()
 
     digitalWrite(SUCTION_CUP_PIN, persistent_actuators_command.arm_vacuum.enable_pump);
     digitalWrite(VALVE_PIN, persistent_actuators_command.arm_vacuum.release);
+
+    disguise = persistent_actuators_command.fake_statuette_vacuum.enable_pump;// Hack to avoid redefining a msg
 }
 
 void drawLCD()
@@ -345,10 +385,17 @@ void setup()
     //digitalWrite(VALVE_PIN, HIGH);
 
     current_score = 0;    
+
+    strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+    strip.show();            // Turn OFF all pixels ASAP
+    strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
 }
 
-
-
+void lightUpAll()
+{
+    strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+    strip.fill(strip.Color(255, 0, 255), 0, LED_COUNT);
+}
 
 void loop()
 {
@@ -356,6 +403,11 @@ void loop()
   double pressure = readPressure();
   vacuum_msg.data = pressure;
   pub_vacuum.publish(&vacuum_msg);
+  if (disguise)
+  {
+    lightUpAll();
+  }
+  
   for (int i = 0; i < 10; i++)
   {
     drawLCD();
