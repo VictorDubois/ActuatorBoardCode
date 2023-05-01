@@ -27,7 +27,7 @@
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 #define LED_PIN 4
-#define LED_COUNT 60
+#define LED_COUNT 80
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Argument 1 = Number of pixels in NeoPixel strip
@@ -88,7 +88,7 @@ uint8_t servo_pins[NB_SERVOS];
 bool stopped_servos_last_update[NB_SERVOS];
 VarSpeedServo myservos[NB_SERVOS];
 bool disguise = false;
-
+bool disguise_done = false;
 
 /*
 pressure_range (kPa)   K value
@@ -384,17 +384,27 @@ void setup()
     //digitalWrite(SUCTION_CUP_PIN, HIGH);
     //digitalWrite(VALVE_PIN, HIGH);
 
-    current_score = 0;    
+    current_score = 0;   
+    disguise_done = false; 
 
     strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-    strip.show();            // Turn OFF all pixels ASAP
-    strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+
+    turnlightsoff();
+
 }
 
 void lightUpAll()
 {
-    strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-    strip.fill(strip.Color(255, 0, 255), 0, LED_COUNT);
+    strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
+    strip.fill(strip.Color(255, 255, 255), 0, LED_COUNT);
+    strip.show();
+}
+
+void turnlightsoff()
+{
+    strip.setBrightness(10); // Set BRIGHTNESS to about 1/5 (max = 255)
+    strip.fill(strip.Color(0, 255, 0), 0, LED_COUNT);
+    strip.show();
 }
 
 void loop()
@@ -403,11 +413,12 @@ void loop()
   double pressure = readPressure();
   vacuum_msg.data = pressure;
   pub_vacuum.publish(&vacuum_msg);
-  if (disguise)
+  if (disguise && !disguise_done)
   {
     lightUpAll();
+    disguise_done = true;
   }
-  
+    
   for (int i = 0; i < 10; i++)
   {
     drawLCD();
