@@ -315,6 +315,9 @@ ros::Publisher pub_vacuum("vacuum", &vacuum_msg);
 
 void writeFullScreen()
 {
+    lcd.init();
+    lcd.backlight();
+    lcd.clear();
     lcd.setCursor(0,0);
     lcd.write(byte(0));
     lcd.write(byte(0));
