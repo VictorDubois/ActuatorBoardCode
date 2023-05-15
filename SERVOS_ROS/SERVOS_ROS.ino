@@ -399,14 +399,14 @@ void setup()
 void lightUpAll()
 {
     strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
-    strip.fill(strip.Color(255, 255, 255), 0, LED_COUNT);
+    strip.fill(strip.Color(255, 65, 0), 0, LED_COUNT);
     strip.show();
 }
 
 void turnlightsoff()
 {
     strip.setBrightness(10); // Set BRIGHTNESS to about 1/5 (max = 255)
-    strip.fill(strip.Color(0, 255, 0), 0, LED_COUNT);
+    strip.fill(strip.Color(0, 100, 255), 0, LED_COUNT);
     strip.show();
 }
 
