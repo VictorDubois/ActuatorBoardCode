@@ -49,15 +49,21 @@ uint16_t      pixelCurrent = 0;         // Pattern Current Pixel Number
 uint16_t      pixelNumber = LED_COUNT;  // Total Number of Pixels
 // end NeoPixel
 
-#define BASE_SERVO 0
-#define BASE_SERVO_PIN 9
-#define MID_SERVO 1
-#define MID_SERVO_PIN 10
-#define SUCTION_SERVO 2
-#define SUCTION_SERVO_PIN 5
-#define PUSHER_SERVO 3
-#define PUSHER_SERVO_PIN 6
-#define NB_SERVOS 4
+#define RIGHT_CLAW_SERVO 0
+#define RIGHT_CLAW_SERVO_PIN 9
+#define LEFT_CLAW_SERVO 1
+#define LEFT_CLAW_SERVO_PIN 10
+#define UNUSED_SERVO 2
+#define UNUSED_SERVO_PIN 5
+#define CERISE_SERVO 3
+#define CERISE_SERVO_PIN 6
+#define BASE_SERVO 4
+#define BASE_SERVO_PIN 44
+#define MID_SERVO 5
+#define MID_SERVO_PIN 45
+#define SUCTION_SERVO 6
+#define SUCTION_SERVO_PIN 46
+#define NB_SERVOS 7
 
 // 3 J5
 // 5 J6
@@ -246,7 +252,9 @@ void update_actuators()
     write_servo_cmd_from_actuator(BASE_SERVO, persistent_actuators_command.arm_base_servo);
     write_servo_cmd_from_actuator(MID_SERVO, persistent_actuators_command.arm_mid_servo);
     write_servo_cmd_from_actuator(SUCTION_SERVO, persistent_actuators_command.arm_suction_cup_servo);
-    write_servo_cmd_from_actuator(PUSHER_SERVO, persistent_actuators_command.pusher_servo);
+    write_servo_cmd_from_actuator(CERISE_SERVO, persistent_actuators_command.pusher_servo);
+    write_servo_cmd_from_actuator(RIGHT_CLAW_SERVO, persistent_actuators_command.additionnal_servo_1);
+    write_servo_cmd_from_actuator(LEFT_CLAW_SERVO, persistent_actuators_command.additionnal_servo_2);
 
     digitalWrite(SUCTION_CUP_PIN, persistent_actuators_command.arm_vacuum.enable_pump);
     digitalWrite(VALVE_PIN, persistent_actuators_command.arm_vacuum.release);
@@ -365,11 +373,16 @@ void setup()
     persistent_actuators_command.arm_vacuum.release = true;
     persistent_actuators_command.fake_statuette_vacuum.enable_pump = false;
     persistent_actuators_command.fake_statuette_vacuum.release = false;
+    persistent_actuators_command.additionnal_servo_1.enable = false;
+    persistent_actuators_command.additionnal_servo_2.enable = false;
 
     servo_pins[BASE_SERVO] = BASE_SERVO_PIN;
     servo_pins[MID_SERVO] = MID_SERVO_PIN;
     servo_pins[SUCTION_SERVO] = SUCTION_SERVO_PIN;
-    servo_pins[PUSHER_SERVO] = PUSHER_SERVO_PIN;
+    servo_pins[CERISE_SERVO] = CERISE_SERVO_PIN;
+    servo_pins[LEFT_CLAW_SERVO] = LEFT_CLAW_SERVO_PIN;
+    servo_pins[RIGHT_CLAW_SERVO] = RIGHT_CLAW_SERVO_PIN;
+    servo_pins[UNUSED_SERVO] = UNUSED_SERVO_PIN;
 
     for (int i = 0; i < NB_SERVOS ; i++)
     {
@@ -380,9 +393,12 @@ void setup()
     pinMode(BASE_SERVO_PIN, OUTPUT);
     pinMode(MID_SERVO_PIN, OUTPUT);
     pinMode(SUCTION_SERVO_PIN, OUTPUT);
-    pinMode(PUSHER_SERVO_PIN, OUTPUT);
+    pinMode(CERISE_SERVO_PIN, OUTPUT);
     pinMode(SUCTION_CUP_PIN, OUTPUT);
     pinMode(VALVE_PIN, OUTPUT);
+    pinMode(LEFT_CLAW_SERVO_PIN, OUTPUT);
+    pinMode(RIGHT_CLAW_SERVO_PIN, OUTPUT);
+    pinMode(UNUSED_SERVO_PIN, OUTPUT);
     
     //digitalWrite(SUCTION_CUP_PIN, HIGH);
     //digitalWrite(VALVE_PIN, HIGH);
