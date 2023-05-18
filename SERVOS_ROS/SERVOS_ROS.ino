@@ -414,9 +414,17 @@ void setup()
 
 void lightUpAll()
 {
-    strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
-    strip.fill(strip.Color(255, 65, 0), 0, LED_COUNT);
+    uint32_t orange = strip.Color(255, 65, 0);
+    strip.setBrightness(255);
     strip.show();
+    for(int i = 0; i< LED_COUNT; i++)
+    {
+        strip.setPixelColor(i, orange);
+        strip.show();
+    }
+    /*strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
+    strip.fill(strip.Color(255, 65, 0), 0, LED_COUNT);
+    strip.show();*/
 }
 
 void turnlightsoff()
@@ -432,11 +440,7 @@ void loop()
   double pressure = readPressure();
   vacuum_msg.data = pressure;
   pub_vacuum.publish(&vacuum_msg);
-  if (disguise && !disguise_done)
-  {
-    lightUpAll();
-    disguise_done = true;
-  }
+  
     
   for (int i = 0; i < 10; i++)
   {
@@ -445,6 +449,11 @@ void loop()
     {
         nh.spinOnce();
         update_actuators();
+        if (disguise && !disguise_done)
+        {
+          lightUpAll();
+          disguise_done = true;
+        }
     }
     delay(5);
   }
