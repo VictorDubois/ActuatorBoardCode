@@ -414,17 +414,9 @@ void setup()
 
 void lightUpAll()
 {
-    uint32_t orange = strip.Color(255, 65, 0);
-    strip.setBrightness(255);
-    strip.show();
-    for(int i = 0; i< LED_COUNT; i++)
-    {
-        strip.setPixelColor(i, orange);
-        strip.show();
-    }
-    /*strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
+    strip.setBrightness(255); // Set BRIGHTNESS to (max = 255)
     strip.fill(strip.Color(255, 65, 0), 0, LED_COUNT);
-    strip.show();*/
+    strip.show();
 }
 
 void turnlightsoff()
