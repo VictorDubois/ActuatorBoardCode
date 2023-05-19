@@ -345,8 +345,9 @@ void writeFullScreen()
 void setup()
 { 
     Serial.begin(57600);
-    Wire.begin();
-    Wire.setClock(100000);
+    //Serial.begin(9600);
+    //Wire.begin();
+    //Wire.setClock(100000);
 
 
     delay(10);
@@ -357,10 +358,10 @@ void setup()
     nh.spinOnce();
 
 
-    lcd.init();                      // initialize the lcd 
+    /*lcd.init();                      // initialize the lcd 
     lcd.backlight();
     createCrab();
-    writeFullScreen();
+    writeFullScreen();*/
     for(int i = 0; i < NB_SERVOS; i++) {
         sent_servos_angles[i] = 100;
         stopped_servos_last_update[i] = true;
@@ -429,15 +430,15 @@ void turnlightsoff()
 
 void loop()
 {
-  writeFullScreen();
-  double pressure = readPressure();
+  //writeFullScreen();
+  double pressure = 0;//readPressure();
   vacuum_msg.data = pressure;
   pub_vacuum.publish(&vacuum_msg);
   
     
   for (int i = 0; i < 10; i++)
   {
-    drawLCD();
+    //drawLCD();
     for (int j = 0; j < 10; j++)
     {
         nh.spinOnce();
