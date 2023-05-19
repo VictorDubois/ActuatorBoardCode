@@ -358,10 +358,10 @@ void setup()
     nh.spinOnce();
 
 
-    /*lcd.init();                      // initialize the lcd 
+    lcd.init();                      // initialize the lcd 
     lcd.backlight();
     createCrab();
-    writeFullScreen();*/
+    writeFullScreen();
     for(int i = 0; i < NB_SERVOS; i++) {
         sent_servos_angles[i] = 100;
         stopped_servos_last_update[i] = true;
@@ -438,7 +438,7 @@ void loop()
     
   for (int i = 0; i < 10; i++)
   {
-    //drawLCD();
+    drawLCD();
     for (int j = 0; j < 10; j++)
     {
         nh.spinOnce();
