@@ -63,7 +63,8 @@ uint16_t      pixelNumber = LED_COUNT;  // Total Number of Pixels
 #define MID_SERVO_PIN 45
 #define SUCTION_SERVO 6
 #define SUCTION_SERVO_PIN 46
-#define NB_SERVOS 7
+#define NB_SERVOS 4
+
 
 // 3 J5
 // 5 J6
@@ -249,9 +250,9 @@ void write_servo_cmd_from_actuator(uint8_t servo_id, const krabi_msgs::servo_cmd
 
 void update_actuators()
 {
-    write_servo_cmd_from_actuator(BASE_SERVO, persistent_actuators_command.arm_base_servo);
-    write_servo_cmd_from_actuator(MID_SERVO, persistent_actuators_command.arm_mid_servo);
-    write_servo_cmd_from_actuator(SUCTION_SERVO, persistent_actuators_command.arm_suction_cup_servo);
+    // write_servo_cmd_from_actuator(BASE_SERVO, persistent_actuators_command.arm_base_servo);
+    // write_servo_cmd_from_actuator(MID_SERVO, persistent_actuators_command.arm_mid_servo);
+    // write_servo_cmd_from_actuator(SUCTION_SERVO, persistent_actuators_command.arm_suction_cup_servo);
     write_servo_cmd_from_actuator(CERISE_SERVO, persistent_actuators_command.pusher_servo);
     write_servo_cmd_from_actuator(RIGHT_CLAW_SERVO, persistent_actuators_command.additionnal_servo_1);
     write_servo_cmd_from_actuator(LEFT_CLAW_SERVO, persistent_actuators_command.additionnal_servo_2);
