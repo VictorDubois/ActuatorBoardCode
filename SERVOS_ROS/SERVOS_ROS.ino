@@ -346,8 +346,9 @@ void setup()
 { 
     Serial.begin(57600);
     //Serial.begin(9600);
-    //Wire.begin();
-    //Wire.setClock(100000);
+    Wire.begin();
+    Wire.setClock(100000);
+    Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
 
 
     delay(10);
