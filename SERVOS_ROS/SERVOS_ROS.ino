@@ -230,6 +230,40 @@ void actuators_cb(const krabi_msgs::actuators& command)
     current_score = command.score;
 }
 
+float get_float(String a_string, int a_beginning)
+{
+    String hexValue = a_string.substring(a_beginning, a_beginning+4); // Extract hexadecimal value
+    unsigned long floatHex = strtoul(a_string.c_str(), NULL, 16); // Convert hexadecimal string to unsigned long
+    float floatValue;
+    memcpy(&floatValue, &floatHex, sizeof(floatValue)); // Convert unsigned long to float
+    return floatValue;
+}
+
+void actuators_hex_cb(String a_message)
+{
+    int i = 0;
+    persistent_actuators_command.arm_base_servo.angle = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.arm_base_servo.speed = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.arm_base_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+
+    persistent_actuators_command.arm_mid_servo.angle = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.arm_mid_servo.speed = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.arm_mid_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+
+    persistent_actuators_command.arm_suction_cup_servo.angle = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.arm_suction_cup_servo.speed = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.arm_suction_cup_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+
+    persistent_actuators_command.pusher_servo.angle = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.pusher_servo.speed = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.pusher_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+
+    persistent_actuators_command.arm_vacuum.enable_pump = get_float(a_message, 10 + (i++)*4) > 0.5f;
+    persistent_actuators_command.arm_vacuum.release = get_float(a_message, 10 + (i++)*4) > 0.5f;
+    
+    current_score = int(get_float(a_message, 10 + (i++)*4));
+}
+
 void write_servo_cmd_from_actuator(uint8_t servo_id, const krabi_msgs::servo_cmd& command)
 {
   if (!command.enable)
@@ -345,6 +379,7 @@ void writeFullScreen()
 void setup()
 { 
     Serial.begin(57600);
+    Serial.setTimeout(100);
     //Serial.begin(9600);
     Wire.begin();
     Wire.setClock(100000);
@@ -353,10 +388,10 @@ void setup()
 
     delay(10);
 
-    nh.initNode();
+    /*nh.initNode();
     nh.subscribe(actuators_sub);
     nh.advertise(pub_vacuum);
-    nh.spinOnce();
+    nh.spinOnce();*/
 
 
     lcd.init();                      // initialize the lcd 
@@ -434,7 +469,8 @@ void loop()
   //writeFullScreen();
   double pressure = 0;//readPressure();
   vacuum_msg.data = pressure;
-  pub_vacuum.publish(&vacuum_msg);
+  //pub_vacuum.publish(&vacuum_msg);
+  //@todo pub
   
     
   for (int i = 0; i < 10; i++)
@@ -442,7 +478,8 @@ void loop()
     drawLCD();
     for (int j = 0; j < 10; j++)
     {
-        nh.spinOnce();
+        //nh.spinOnce();
+        // @Todo read
         update_actuators();
         if (disguise && !disguise_done)
         {
