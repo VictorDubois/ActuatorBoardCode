@@ -84,7 +84,7 @@ uint16_t      pixelNumber = LED_COUNT;  // Total Number of Pixels
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
-ros::NodeHandle nh;
+//ros::NodeHandle nh;
 bool stopped = true;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 uint8_t current_score;
@@ -239,6 +239,29 @@ float get_float(String a_string, int a_beginning)
     return floatValue;
 }
 
+void read_serial()
+{
+    String line = Serial.readStringUntil('\n');
+    if(line.length() < 10 + (7*3+1) *4 )
+    {
+      return;// Line too short, invalid
+    }
+    actuators_hex_cb(line);
+}
+
+void write_float(float a_value)
+{
+    uint32_t floatHex;
+    memcpy(&floatHex, &a_value, sizeof(a_value));
+    Serial.print(floatHex, HEX); 
+}
+void write_serial(float a_vacuum)
+{
+    Serial.print("From Arduino:");
+    write_float(a_vacuum);
+    Serial.println();
+}
+
 void actuators_hex_cb(String a_message)
 {
     int i = 0;
@@ -258,9 +281,19 @@ void actuators_hex_cb(String a_message)
     persistent_actuators_command.pusher_servo.speed = get_float(a_message, 10 + (i++)*4);
     persistent_actuators_command.pusher_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
 
+    persistent_actuators_command.additionnal_servo_1.angle = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.additionnal_servo_1.speed = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.additionnal_servo_1.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+
+    persistent_actuators_command.additionnal_servo_2.angle = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.additionnal_servo_2.speed = get_float(a_message, 10 + (i++)*4);
+    persistent_actuators_command.additionnal_servo_2.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+
     persistent_actuators_command.arm_vacuum.enable_pump = get_float(a_message, 10 + (i++)*4) > 0.5f;
     persistent_actuators_command.arm_vacuum.release = get_float(a_message, 10 + (i++)*4) > 0.5f;
     
+    persistent_actuators_command.fake_statuette_vacuum.enable_pump = get_float(a_message, 10 + (i++)*4) > 0.5f;
+
     current_score = int(get_float(a_message, 10 + (i++)*4));
 }
 
@@ -353,8 +386,8 @@ void createCrab()
     lcd.createChar(0, Crab1);
     lcd.createChar(1, Crab2);
 }
-ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators_msg", actuators_cb);
-ros::Publisher pub_vacuum("vacuum", &vacuum_msg);
+//ros::Subscriber<krabi_msgs::actuators> actuators_sub("actuators_msg", actuators_cb);
+//ros::Publisher pub_vacuum("vacuum", &vacuum_msg);
 
 void writeFullScreen()
 {
@@ -471,6 +504,7 @@ void loop()
   vacuum_msg.data = pressure;
   //pub_vacuum.publish(&vacuum_msg);
   //@todo pub
+  write_serial((float)pressure);
   
     
   for (int i = 0; i < 10; i++)
@@ -479,6 +513,8 @@ void loop()
     for (int j = 0; j < 10; j++)
     {
         //nh.spinOnce();
+        read_serial();
+
         // @Todo read
         update_actuators();
         if (disguise && !disguise_done)
