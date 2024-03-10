@@ -230,10 +230,13 @@ void actuators_cb(const krabi_msgs::actuators& command)
     current_score = command.score;
 }
 
-float get_float(String a_string, int a_beginning)
+float get_float(String* a_string, int a_beginning)
 {
-    String hexValue = a_string.substring(a_beginning, a_beginning+4); // Extract hexadecimal value
-    unsigned long floatHex = strtoul(a_string.c_str(), NULL, 16); // Convert hexadecimal string to unsigned long
+    //Serial.print((*a_string).c_str());
+    String hexValue = a_string->substring(a_beginning, a_beginning+8); // Extract hexadecimal value
+    //Serial.print(hexValue);
+    uint32_t floatHex = strtoul(hexValue.c_str(), NULL, 16); // Convert hexadecimal string to unsigned long
+    //Serial.print(floatHex);
     float floatValue;
     memcpy(&floatValue, &floatHex, sizeof(floatValue)); // Convert unsigned long to float
     return floatValue;
@@ -265,36 +268,51 @@ void write_serial(float a_vacuum)
 void actuators_hex_cb(String a_message)
 {
     int i = 0;
-    persistent_actuators_command.arm_base_servo.angle = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.arm_base_servo.speed = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.arm_base_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+    const int offset = 0;//10;
+    const int float_msg_size = 8;
+    persistent_actuators_command.arm_base_servo.enable = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
+    persistent_actuators_command.arm_base_servo.speed = get_float(&a_message, offset + (i++)*float_msg_size);
+    persistent_actuators_command.arm_base_servo.angle = get_float(&a_message, offset + (i++)*float_msg_size);
 
-    persistent_actuators_command.arm_mid_servo.angle = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.arm_mid_servo.speed = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.arm_mid_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+    persistent_actuators_command.arm_mid_servo.enable = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
+    persistent_actuators_command.arm_mid_servo.speed = get_float(&a_message, offset + (i++)*float_msg_size);
+    persistent_actuators_command.arm_mid_servo.angle = get_float(&a_message, offset + (i++)*float_msg_size);
 
-    persistent_actuators_command.arm_suction_cup_servo.angle = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.arm_suction_cup_servo.speed = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.arm_suction_cup_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
 
-    persistent_actuators_command.pusher_servo.angle = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.pusher_servo.speed = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.pusher_servo.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+    /*Serial.println("coucou");
+    Serial.print(persistent_actuators_command.arm_base_servo.enable);
+    Serial.print(persistent_actuators_command.arm_base_servo.speed);
+    Serial.print(persistent_actuators_command.arm_base_servo.angle);
+    Serial.print(persistent_actuators_command.arm_mid_servo.enable);
+    Serial.print(persistent_actuators_command.arm_mid_servo.speed);
+    Serial.println(persistent_actuators_command.arm_mid_servo.angle);*/
 
-    persistent_actuators_command.additionnal_servo_1.angle = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.additionnal_servo_1.speed = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.additionnal_servo_1.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
 
-    persistent_actuators_command.additionnal_servo_2.angle = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.additionnal_servo_2.speed = get_float(a_message, 10 + (i++)*4);
-    persistent_actuators_command.additionnal_servo_2.enable = get_float(a_message, 10 + (i++)*4) > 0.5f;
+    persistent_actuators_command.arm_suction_cup_servo.enable = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
+    persistent_actuators_command.arm_suction_cup_servo.speed = get_float(&a_message, offset + (i++)*float_msg_size);
+    persistent_actuators_command.arm_suction_cup_servo.angle = get_float(&a_message, offset + (i++)*float_msg_size);
 
-    persistent_actuators_command.arm_vacuum.enable_pump = get_float(a_message, 10 + (i++)*4) > 0.5f;
-    persistent_actuators_command.arm_vacuum.release = get_float(a_message, 10 + (i++)*4) > 0.5f;
+    persistent_actuators_command.pusher_servo.enable = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
+    persistent_actuators_command.pusher_servo.speed = get_float(&a_message, offset + (i++)*float_msg_size);
+    persistent_actuators_command.pusher_servo.angle = get_float(&a_message, offset + (i++)*float_msg_size);
+
+    persistent_actuators_command.additionnal_servo_1.enable = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
+    persistent_actuators_command.additionnal_servo_1.speed = get_float(&a_message, offset + (i++)*float_msg_size);
+    persistent_actuators_command.additionnal_servo_1.angle = get_float(&a_message, offset + (i++)*float_msg_size);
+
+    persistent_actuators_command.additionnal_servo_2.enable = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
+    persistent_actuators_command.additionnal_servo_2.speed = get_float(&a_message, offset + (i++)*float_msg_size);
+    persistent_actuators_command.additionnal_servo_2.angle = get_float(&a_message, offset + (i++)*float_msg_size);
+
+    persistent_actuators_command.arm_vacuum.enable_pump = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
+    persistent_actuators_command.arm_vacuum.release = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
     
-    persistent_actuators_command.fake_statuette_vacuum.enable_pump = get_float(a_message, 10 + (i++)*4) > 0.5f;
+    persistent_actuators_command.fake_statuette_vacuum.enable_pump = get_float(&a_message, offset + (i++)*float_msg_size) > 0.5f;
 
-    current_score = int(get_float(a_message, 10 + (i++)*4));
+    current_score = int(get_float(&a_message, offset + (i++)*float_msg_size));
+
+    //Serial.print("score: ");
+    //Serial.println(current_score);
 }
 
 void write_servo_cmd_from_actuator(uint8_t servo_id, const krabi_msgs::servo_cmd& command)
