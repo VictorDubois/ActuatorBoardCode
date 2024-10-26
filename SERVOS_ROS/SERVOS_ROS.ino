@@ -10,7 +10,8 @@
 
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h> // https://github.com/johnrickman/LiquidCrystal_I2C
-#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
+//#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
+#include <Servo.h> // https://github.com/Dlloydev/ESP32-ESP32S2-AnalogWrite
 
 ////// NeoPixel
 // NEOPIXEL BEST PRACTICES for most reliable operation:
@@ -22,7 +23,8 @@
 // - When using a 3.3V microcontroller with a 5V-powered NeoPixel strip,
 //   a LOGIC-LEVEL CONVERTER on the data line is STRONGLY RECOMMENDED.
 // (Skipping these may work OK on your workbench but can fail in the field)
-#include <Adafruit_NeoPixel.h>
+#include <Adafruit_NeoPixel.h> // https://github.com/adafruit/Adafruit_NeoPixel
+
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
@@ -78,13 +80,6 @@ uint16_t      pixelNumber = LED_COUNT;  // Total Number of Pixels
 #define SUCTION_CUP_PIN 8
 #define VALVE_PIN 2
 
-#define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  600 // This is the 'maximum' pulse length count (out of 4096)
-#define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
-#define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
-#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
-
-//ros::NodeHandle nh;
 bool stopped = true;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 uint8_t current_score;
@@ -93,7 +88,7 @@ std_msgs::Float32 vacuum_msg;
 int16_t sent_servos_angles[NB_SERVOS];
 uint8_t servo_pins[NB_SERVOS];
 bool stopped_servos_last_update[NB_SERVOS];
-VarSpeedServo myservos[NB_SERVOS];
+Servo myservos[NB_SERVOS];
 bool disguise = false;
 bool disguise_done = false;
 
@@ -201,26 +196,11 @@ uint8_t Read_One_Byte(uint8_t device_address, uint8_t addr)
 
 void write_servo_cmd(uint8_t servo_id, int16_t servo_cmd_angle, int16_t servo_cmd_speed)
 {
-    if (servo_cmd_angle == sent_servos_angles[servo_id])
-    {
-      return;
-    }
-    delay(50);
-    if (servo_cmd_angle > sent_servos_angles[servo_id] + servo_cmd_speed)
-    {
-        sent_servos_angles[servo_id] += servo_cmd_speed;
-    }
-    else if (servo_cmd_angle < sent_servos_angles[servo_id] - servo_cmd_speed)
-    {
-        sent_servos_angles[servo_id] -= servo_cmd_speed;
-    }
-    else
-    {
-        sent_servos_angles[servo_id] = servo_cmd_angle;
-    }
-    //pwm.setPWM(servo_pins[servo_id], 0, map(sent_servos_angles[servo_id], 0, 255, SERVOMIN, SERVOMAX));
-    myservos[servo_id].write(sent_servos_angles[servo_id]);
-    
+  // When easing constant (ke) < 1.0, return value is normalized, when 1.0, returns pulse width (μs)
+  // ke = 0.0 is linear, between 0.0 and 1.0 is tunable sigmoid, 1.0 is normal response
+  // Normalized Tunable Sigmoid: https://www.desmos.com/calculator/ejkcwglzd1
+  float l_easing_constant = 0.8;
+  myservos[servo_id].write(servo_pins[servo_id], servo_cmd_angle, servo_cmd_speed, l_easing_constant);    
 }
 
 
@@ -431,19 +411,16 @@ void setup()
 { 
     Serial.begin(57600);
     Serial.setTimeout(100);
-    //Serial.begin(9600);
     Wire.begin();
     Wire.setClock(100000);
-    Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
 
+    #ifdef __AVR__
+      Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
+    #else
+      Wire.setTimeOut(3);//ms
+    #endif
 
     delay(10);
-
-    /*nh.initNode();
-    nh.subscribe(actuators_sub);
-    nh.advertise(pub_vacuum);
-    nh.spinOnce();*/
-
 
     lcd.init();                      // initialize the lcd 
     lcd.backlight();
