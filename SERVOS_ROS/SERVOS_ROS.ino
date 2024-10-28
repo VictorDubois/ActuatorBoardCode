@@ -18,35 +18,6 @@
 #include "pressure_sensor_manager.h"
 
 
-
-#define RIGHT_CLAW_SERVO 0
-#define RIGHT_CLAW_SERVO_PIN 9
-#define LEFT_CLAW_SERVO 1
-#define LEFT_CLAW_SERVO_PIN 10
-#define UNUSED_SERVO 2
-#define UNUSED_SERVO_PIN 5
-#define CERISE_SERVO 3
-#define CERISE_SERVO_PIN 6
-#define BASE_SERVO 4
-#define BASE_SERVO_PIN 44
-#define MID_SERVO 5
-#define MID_SERVO_PIN 45
-#define SUCTION_SERVO 6
-#define SUCTION_SERVO_PIN 46
-
-
-// 3 J5
-// 5 J6
-// 6 J7
-// 7 J18
-// 13 J19
-// 9 J8
-// 10 J9
-// 11 J10
-
-#define SUCTION_CUP_PIN 8
-#define VALVE_PIN 2
-
 uint8_t current_score;
 
 PersistentServo* myPersistentServos[NB_SERVOS];
