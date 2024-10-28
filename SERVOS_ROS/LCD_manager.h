@@ -4,6 +4,7 @@
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 
 
+
 void print_with_padding(uint16_t number)
 {
     uint16_t hundreds = (number%1000 - number%100)/100;
@@ -83,4 +84,23 @@ void writeFullScreen()
     lcd.write(byte(0));
     lcd.setCursor(7,1);
     lcd.print("Score:");
+}
+
+void LCD_setup()
+{
+    Wire.begin();
+    Wire.setClock(100000);
+
+    #ifdef __AVR__
+      Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
+    #else
+      Wire.setTimeOut(3);//ms
+    #endif
+
+    delay(10);
+
+    lcd.init();                      // initialize the lcd 
+    lcd.backlight();
+    createCrab();
+    writeFullScreen();
 }
