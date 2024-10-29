@@ -25,7 +25,7 @@ ServoMessage SERVO_1_msg;
 
 void setup()
 { 
-    Serial.begin(57600);
+    Serial.begin(115200);
     Serial.setTimeout(100);
     
     LCD_setup();
@@ -35,6 +35,8 @@ void setup()
     myPersistentServos[servoIndex++] = new PersistentServo(2);
     myPersistentServos[servoIndex++] = new PersistentServo(3);
     myPersistentServos[servoIndex++] = new PersistentServo(6);
+
+    initServos(myPersistentServos);
 
 
     delay(10);
@@ -53,7 +55,7 @@ void setup()
 
 
 void loop()
-{
+{  
   double pressure = 0;//readPressure();
  
     
@@ -75,6 +77,7 @@ void loop()
         myPersistentServos[3]->angle = SERVO_1_msg.angle_s4;
         myPersistentServos[3]->speed = SERVO_1_msg.speed_s4;
 
+        updateServos(myPersistentServos);
     }
     delay(5);
   }

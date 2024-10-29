@@ -7,14 +7,18 @@ struct PersistentServo
     PersistentServo(uint16_t pin, int16_t angle, int16_t speed) 
     : pin(pin), angle(angle), speed(speed)
     {
-        pinMode(pin, OUTPUT);
-        Servo espServo = Servo();
-        espServo.attach(pin);
         easing_constant = 0.8;
     }
     PersistentServo(uint16_t pin)
     {
       PersistentServo(pin, 100, 100);
+    }
+
+    void init()
+    {
+        pinMode(pin, OUTPUT);
+        //espServo = Servo();
+        espServo.attach(pin);
     }
 
     uint16_t pin;
@@ -27,6 +31,14 @@ struct PersistentServo
     // Normalized Tunable Sigmoid: https://www.desmos.com/calculator/ejkcwglzd1
     double easing_constant;
 };
+
+void initServos(PersistentServo** myPersistentServos)
+{
+    for (int i = 0; i < NB_SERVOS; i++)
+    {
+        myPersistentServos[i]->init();
+    }
+}
 
 void updateServos(PersistentServo** myPersistentServos)
 {
