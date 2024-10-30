@@ -9,10 +9,7 @@ struct PersistentServo
     {
         easing_constant = 0.8;
     }
-    PersistentServo(uint16_t pin)
-    {
-      PersistentServo(pin, 100, 100);
-    }
+    PersistentServo(uint16_t pin): PersistentServo(pin, 100, 100) {}
 
     void init()
     {
