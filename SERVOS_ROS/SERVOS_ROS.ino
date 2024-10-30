@@ -23,6 +23,8 @@ uint8_t current_score;
 PersistentServo* myPersistentServos[NB_SERVOS];
 ServoMessage SERVO_1_msg;
 
+
+
 void setup()
 { 
     Serial.begin(115200);
@@ -31,12 +33,10 @@ void setup()
     LCD_setup();
 
     int servoIndex = 0;
-    myPersistentServos[servoIndex++] = new PersistentServo(1);
-    myPersistentServos[servoIndex++] = new PersistentServo(2);
-    myPersistentServos[servoIndex++] = new PersistentServo(3);
-    myPersistentServos[servoIndex++] = new PersistentServo(6);
-
-    initServos(myPersistentServos);
+    myPersistentServos[servoIndex++] = new PersistentServo(12);
+    myPersistentServos[servoIndex++] = new PersistentServo(14);
+    myPersistentServos[servoIndex++] = new PersistentServo(32);
+    myPersistentServos[servoIndex++] = new PersistentServo(22);
 
 
     delay(10);
