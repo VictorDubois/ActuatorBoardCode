@@ -1,0 +1,3 @@
+[submodule "SERVOS_ROS/CanStruct"]
+	path = SERVOS_ROS/CanStruct
+	url = git@github.com:VictorDubois/CanStruct.git
