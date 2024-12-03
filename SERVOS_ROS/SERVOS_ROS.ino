@@ -64,9 +64,7 @@ void loop()
     drawLCD(current_score);
     for (int j = 0; j < 10; j++)
     {
-        int new_score = 0;
-        loopCAN(new_score, &SERVO_1_msg);
-        current_score = new_score; // gnagnagna rvalue, lvalue...
+        loopCAN(current_score, &SERVO_1_msg);
 
         myPersistentServos[0]->angle = SERVO_1_msg.angle_s1;
         myPersistentServos[0]->speed = SERVO_1_msg.speed_s1;
@@ -81,4 +79,6 @@ void loop()
     }
     delay(5);
   }
+  Serial.println(myPersistentServos[0]->angle);
+  Serial.println(current_score);
 }

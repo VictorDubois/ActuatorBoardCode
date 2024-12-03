@@ -1,5 +1,5 @@
 #include <cstring>  // For memcpy
-#include "can_structs.h"
+#include "CanStruct/can_structs.h"
 
 
 // Define a struct that matches your CAN message format
@@ -64,27 +64,34 @@ static uint32_t gSentFrameCount = 0 ;
 //   LOOP
 //----------------------------------------------------------------------------------------
 
-void loopCAN (int& a_current_score, ServoMessage* SERVO_1_msg) {
-  Serial.print(".");
+void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg) {
+  //Serial.print("."); // debug
+  pinged = true; // force sending a CAN message
   CANMessage frame ;
   if (gBlinkLedDate < millis ()) {
     gBlinkLedDate += 500 ;
     //digitalWrite (LED_BUILTIN, !digitalRead (LED_BUILTIN)) ;
 
-    Serial.print ("Sent: ") ;
-    Serial.print (gSentFrameCount) ;
-    Serial.print (" ") ;
-    Serial.print ("Receive: ") ;
-    Serial.print (gReceivedFrameCount) ;
-    Serial.print (" ") ;
-    Serial.print (" STATUS 0x") ;
-    Serial.print (TWAI_STATUS_REG, HEX) ;
-    Serial.print (" RXERR ") ;
-    Serial.print (TWAI_RX_ERR_CNT_REG) ;
-    Serial.print (" TXERR ") ;
-    Serial.println (TWAI_TX_ERR_CNT_REG) ;
+    bool l_print_debug = true;
+    if (l_print_debug)
+    {
+      Serial.print ("Sent: ") ;
+      Serial.print (gSentFrameCount) ;
+      Serial.print (" ") ;
+      Serial.print ("Receive: ") ;
+      Serial.print (gReceivedFrameCount) ;
+      Serial.print (" ") ;
+      Serial.print (" STATUS 0x") ;
+      Serial.print (TWAI_STATUS_REG, HEX) ;
+      Serial.print (" RXERR ") ;
+      Serial.print (TWAI_RX_ERR_CNT_REG) ;
+      Serial.print (" TXERR ") ;
+      Serial.println (TWAI_TX_ERR_CNT_REG) ;
+    }
     if (pinged){
       frame.id = 42;
+      frame.rtr = 0;
+      frame.len = 1;
       frame.data[0] = 12;
       const bool ok = ACAN_ESP32::can.tryToSend (frame) ;
       if (ok) {
@@ -110,9 +117,7 @@ void loopCAN (int& a_current_score, ServoMessage* SERVO_1_msg) {
     }
     else if(frame.id == can_ids::SCORE)
     {
-        Score l_current_score;
-        l_current_score.score = frame.data32[0];
-        a_current_score = l_current_score.score;
+        a_current_score = frame.data[0];
     }
   }
 }
