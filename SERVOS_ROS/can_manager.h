@@ -98,6 +98,18 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg) {
         gSentFrameCount += 1 ;
       }
     }
+
+    frame.id = can_ids::ANALOG_SENSORS;
+    frame.rtr = 0;
+    frame.len = sizeof(AnalogSensors);
+    for (int i = 0; i< 8; i++)
+    {
+      frame.data[i] = 0;
+    }
+    uint16_t batt_mv = 12000;
+    frame.data[1] = batt_mv%256;
+    frame.data[0] = batt_mv>>8;
+    ACAN_ESP32::can.tryToSend (frame) ;
   }
 
   while (ACAN_ESP32::can.receive (frame)) {
