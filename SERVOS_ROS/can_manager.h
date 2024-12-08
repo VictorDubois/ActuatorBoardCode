@@ -64,7 +64,7 @@ static uint32_t gSentFrameCount = 0 ;
 //   LOOP
 //----------------------------------------------------------------------------------------
 
-void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg) {
+void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage* SERVO_2_msg) {
   //Serial.print("."); // debug
   pinged = true; // force sending a CAN message
   CANMessage frame ;
@@ -124,6 +124,19 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg) {
         SERVO_1_msg->speed_s3 = frame.data_s8[5]; // 0 means disable the servo
         SERVO_1_msg->angle_s4 = frame.data_s8[6];
         SERVO_1_msg->speed_s4 = frame.data_s8[7]; // 0 means disable the servo
+
+        pinged = true;
+    }
+    else if(frame.id == SERVO_2)
+    {
+        SERVO_2_msg->angle_s1 = frame.data_s8[0];
+        SERVO_2_msg->speed_s1 = frame.data_s8[1]; // 0 means disable the servo
+        SERVO_2_msg->angle_s2 = frame.data_s8[2];
+        SERVO_2_msg->speed_s2 = frame.data_s8[3]; // 0 means disable the servo
+        SERVO_2_msg->angle_s3 = frame.data_s8[4];
+        SERVO_2_msg->speed_s3 = frame.data_s8[5]; // 0 means disable the servo
+        SERVO_2_msg->angle_s4 = frame.data_s8[6];
+        SERVO_2_msg->speed_s4 = frame.data_s8[7]; // 0 means disable the servo
 
         pinged = true;
     }
