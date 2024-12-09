@@ -16,6 +16,7 @@
 #include "LCD_manager.h"
 #include "RGBStrip_manager.h"
 #include "pressure_sensor_manager.h"
+#include "stepper_manager.h"
 
 
 uint8_t current_score;
@@ -40,6 +41,8 @@ void setup()
 
 
     delay(10);
+
+    setupAccelStep();
     
     //digitalWrite(SUCTION_CUP_PIN, HIGH);
     //digitalWrite(VALVE_PIN, HIGH);
@@ -57,16 +60,18 @@ void setup()
 void loop()
 {  
   double pressure = 0;//readPressure();
- 
+  ServoMessage SERVO_1_msg;
+  ServoMessage SERVO_2_msg;
+  Stepper stepperStruct;
+  StepperInfo stepper_info;
     
   for (int i = 0; i < 10; i++)
   {
     drawLCD(current_score);
     for (int j = 0; j < 10; j++)
     {
-        ServoMessage SERVO_1_msg;
-        ServoMessage SERVO_2_msg;
-        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg);
+        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info);
+        stepper_info = loopStepper(stepperStruct);
 
         myPersistentServos[0]->angle = SERVO_1_msg.angle_s1;
         myPersistentServos[0]->speed = SERVO_1_msg.speed_s1;
@@ -77,14 +82,14 @@ void loop()
         myPersistentServos[3]->angle = SERVO_1_msg.angle_s4;
         myPersistentServos[3]->speed = SERVO_1_msg.speed_s4;
         
-        myPersistentServos[4]->angle = SERVO_2_msg.angle_s1;
+        /*myPersistentServos[4]->angle = SERVO_2_msg.angle_s1;
         myPersistentServos[4]->speed = SERVO_2_msg.speed_s1;
         myPersistentServos[5]->angle = SERVO_2_msg.angle_s2;
         myPersistentServos[5]->speed = SERVO_2_msg.speed_s2;
         myPersistentServos[6]->angle = SERVO_2_msg.angle_s3;
         myPersistentServos[6]->speed = SERVO_2_msg.speed_s3;
         myPersistentServos[7]->angle = SERVO_2_msg.angle_s4;
-        myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;
+        myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;*/
 
         updateServos(myPersistentServos);
     }

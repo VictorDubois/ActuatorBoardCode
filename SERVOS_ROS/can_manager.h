@@ -64,7 +64,7 @@ static uint32_t gSentFrameCount = 0 ;
 //   LOOP
 //----------------------------------------------------------------------------------------
 
-void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage* SERVO_2_msg) {
+void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage* SERVO_2_msg, Stepper* stepperStruct, StepperInfo* stepper_info) {
   //Serial.print("."); // debug
   pinged = true; // force sending a CAN message
   CANMessage frame ;
@@ -102,13 +102,26 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
     frame.id = can_ids::ANALOG_SENSORS;
     frame.rtr = 0;
     frame.len = sizeof(AnalogSensors);
-    for (int i = 0; i< 8; i++)
+    for (int i = 0; i < 8; i++)
     {
       frame.data[i] = 0;
     }
     uint16_t batt_mv = 12000;
     frame.data[1] = batt_mv%256;
     frame.data[0] = batt_mv>>8;
+    ACAN_ESP32::can.tryToSend (frame) ;
+
+
+    frame.id = can_ids::STEPPER_INFO;
+    frame.rtr = 0;
+    frame.len = sizeof(StepperInfo);
+    for (int i = 0; i < 8; i++)
+    {
+      frame.data[i] = 0;
+    }
+    frame.data[2] = stepper_info->homing_sequences_done;
+    frame.data[1] = stepper_info->distance_to_go%256;
+    frame.data[0] = stepper_info->distance_to_go>>8;
     ACAN_ESP32::can.tryToSend (frame) ;
   }
 
@@ -139,6 +152,14 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
         SERVO_2_msg->speed_s4 = frame.data_s8[7]; // 0 means disable the servo
 
         pinged = true;
+    }
+    else if(frame.id == STEPPER_CMD)
+    {
+        stepperStruct->speed    = frame.data_s8[0] << 8 | frame.data_s8[1];
+        stepperStruct->accel    = frame.data_s8[2] << 8 | frame.data_s8[3];
+        stepperStruct->position = frame.data_s8[4] << 8 | frame.data_s8[5];
+        stepperStruct->current  = frame.data_s8[6];
+        stepperStruct->mode     = frame.data_s8[7];
     }
     else if(frame.id == can_ids::SCORE)
     {
