@@ -41,9 +41,11 @@ void setup()
 
 
     delay(10);
+    Serial.println("before setupAccelStep");
 
     setupAccelStep();
-    
+    Serial.println("after setupAccelStep");
+
     //digitalWrite(SUCTION_CUP_PIN, HIGH);
     //digitalWrite(VALVE_PIN, HIGH);
 
@@ -54,6 +56,18 @@ void setup()
     turnlightsoff();
 
     setupCAN();
+    Serial.println("end of Setup");
+
+
+    // Homing
+    Stepper stepperStructHoming;
+    stepperStructHoming.current = 200; //*50mA
+    stepperStructHoming.accel = 100; //mm/s2
+    stepperStructHoming.speed = 10; //mm/s
+    stepperStructHoming.position = -1000; //mm
+    stepperStructHoming.mode = stepper_mode::HOMING;
+    loopStepper(stepperStructHoming);
+
 }
 
 
@@ -67,20 +81,37 @@ void loop()
     
   for (int i = 0; i < 10; i++)
   {
-    drawLCD(current_score);
-    for (int j = 0; j < 10; j++)
+    //drawLCD(current_score);
+    for (int j = 0; j < 1; j++)
     {
-        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info);
-        stepper_info = loopStepper(stepperStruct);
+        //loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info);
 
-        myPersistentServos[0]->angle = SERVO_1_msg.angle_s1;
+        stepperStruct.current = 200; //*50mA
+        stepperStruct.accel = 1000; //mm/s2
+        stepperStruct.speed = 100; //mm/s
+        stepperStruct.position = 50; //mm
+        if ((millis()/2000)%2)
+        {
+          stepperStruct.position = 60; //mm
+        }
+        stepperStruct.mode = stepper_mode::POSITION;
+
+        for(int i = 0; i < 10; i++)
+        {
+          stepper_info = loopStepper(stepperStruct);
+        }
+        
+
+        //Serial.println(stepper_info.distance_to_go);
+
+        /*myPersistentServos[0]->angle = SERVO_1_msg.angle_s1;
         myPersistentServos[0]->speed = SERVO_1_msg.speed_s1;
         myPersistentServos[1]->angle = SERVO_1_msg.angle_s2;
         myPersistentServos[1]->speed = SERVO_1_msg.speed_s2;
         myPersistentServos[2]->angle = SERVO_1_msg.angle_s3;
         myPersistentServos[2]->speed = SERVO_1_msg.speed_s3;
         myPersistentServos[3]->angle = SERVO_1_msg.angle_s4;
-        myPersistentServos[3]->speed = SERVO_1_msg.speed_s4;
+        myPersistentServos[3]->speed = SERVO_1_msg.speed_s4;*/
         
         /*myPersistentServos[4]->angle = SERVO_2_msg.angle_s1;
         myPersistentServos[4]->speed = SERVO_2_msg.speed_s1;
@@ -91,10 +122,11 @@ void loop()
         myPersistentServos[7]->angle = SERVO_2_msg.angle_s4;
         myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;*/
 
-        updateServos(myPersistentServos);
+        //updateServos(myPersistentServos);
     }
-    delay(5);
+    //delay(5);
   }
-  Serial.println(myPersistentServos[0]->angle);
-  Serial.println(current_score);
+  Serial.println(stepper_info.distance_to_go);
+  //Serial.println(myPersistentServos[0]->angle);
+  //Serial.println(current_score);
 }
