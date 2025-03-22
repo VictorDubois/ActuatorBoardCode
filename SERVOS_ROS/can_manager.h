@@ -1,9 +1,11 @@
 #include <cstring>  // For memcpy
-#include "CanStruct/can_structs.h"
+#include "can_structs.h"
+
+using namespace CAN;
 
 
 // Define a struct that matches your CAN message format
-struct CanMessage {
+struct CanMessage { 
     uint16_t id;     // CAN message ID
     uint8_t dlc;     // Data Length Code (how many bytes of data)
     uint8_t data[8]; // Up to 8 bytes of data payload
@@ -166,6 +168,6 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
         a_current_score = frame.data[0];
     }
   }
-}
 
+}
 //----------------------------------------------------------------------------------------

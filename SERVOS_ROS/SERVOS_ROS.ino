@@ -2,12 +2,12 @@
 * Author : Victor Dubois
 ****************************************************************************/
 
-#include <ros.h>
+/*#include <ros.h>
 #include <krabi_msgs/servo_cmd.h>
 #include <krabi_msgs/actuators.h>
 #include <krabi_msgs/vacuum_pump.h>
 #include <std_msgs/Float32.h>
-
+*/
 #include <Wire.h> 
 //#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
 //#include "can_structs.h"
@@ -87,10 +87,10 @@ void loop()
         //loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info);
 
         stepperStruct.current = 200; //*50mA
-        stepperStruct.accel = 1000; //mm/s2
-        stepperStruct.speed = 100; //mm/s
+        stepperStruct.accel = 200; //mm/s2
+        stepperStruct.speed = 200; //mm/s
         stepperStruct.position = 50; //mm
-        if ((millis()/2000)%2)
+        if ((millis()/1000)%2)
         {
           stepperStruct.position = 60; //mm
         }

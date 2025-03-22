@@ -40,10 +40,10 @@ void setupAccelStep() {
     Serial2.begin(115200, SERIAL_8N1, SW_RX, SW_TX);
 
     driver.begin();             // Initiate pins and registeries
-    driver.rms_current(60000);    // Set stepper current to 600mA. The command is the same as command TMC2130.setCurrent(600, 0.11, 0.5);
+    driver.rms_current(120000);    // Set stepper current to 600mA. The command is the same as command TMC2130.setCurrent(600, 0.11, 0.5);
     //driver.en_pwm_mode(1);      // Enable extremely quiet stepping
     driver.pwm_autoscale(1);
-    driver.microsteps(16);
+    driver.microsteps(4);
 
     stepper.setMaxSpeed(500*steps_per_mm); // 100mm/s @ 80 steps/mm
     stepper.setAcceleration(1000*steps_per_mm); // 2000mm/s^2
