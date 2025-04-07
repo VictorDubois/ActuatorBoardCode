@@ -13,7 +13,7 @@
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
-#define LED_PIN 4
+#define LED_PIN 10
 #define LED_COUNT 80
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);

@@ -17,27 +17,35 @@
 #include "RGBStrip_manager.h"
 #include "pressure_sensor_manager.h"
 #include "stepper_manager.h"
-
+#include "VL53L0X.h"
+#include "io_expender_manager.h"
 
 uint8_t current_score;
 
 PersistentServo* myPersistentServos[NB_SERVOS];
-
-
-
+IOPotentiallyExpended io;
+VL53L0X_RangingMeasurementData_t measureFront;
+VL53L0X_RangingMeasurementData_t measureRear;
 
 void setup()
 { 
     Serial.begin(115200);
     Serial.setTimeout(100);
+
+
+    //if (!io_exp.begin(LCM2004A_I2C_ADR1)) io_exp.begin(LCM2004A_I2C_ADR2);
     
     LCD_setup();
 
     int servoIndex = 0;
-    myPersistentServos[servoIndex++] = new PersistentServo(12);
-    myPersistentServos[servoIndex++] = new PersistentServo(14);
-    myPersistentServos[servoIndex++] = new PersistentServo(32);
-    myPersistentServos[servoIndex++] = new PersistentServo(22);
+    myPersistentServos[servoIndex++] = new PersistentServo(35);
+    myPersistentServos[servoIndex++] = new PersistentServo(36);
+    myPersistentServos[servoIndex++] = new PersistentServo(37);
+    myPersistentServos[servoIndex++] = new PersistentServo(39);
+    myPersistentServos[servoIndex++] = new PersistentServo(40);
+    myPersistentServos[servoIndex++] = new PersistentServo(41);
+    myPersistentServos[servoIndex++] = new PersistentServo(42);
+    myPersistentServos[servoIndex++] = new PersistentServo(43);
 
 
     delay(10);
@@ -56,6 +64,13 @@ void setup()
     turnlightsoff();
 
     setupCAN();
+
+    setupVL53L0X(&io);
+    io.myPinMode(100, INPUT);
+    io.myPinMode(101, INPUT);
+    io.myPinMode(102, INPUT);
+    io.myPinMode(103, INPUT);
+
     Serial.println("end of Setup");
 
 
@@ -78,13 +93,26 @@ void loop()
   ServoMessage SERVO_2_msg;
   Stepper stepperStruct;
   StepperInfo stepper_info;
+
+  uint16_t bat_12V_voltage;
+  uint8_t digital_io_read;
     
   for (int i = 0; i < 10; i++)
   {
-    //drawLCD(current_score);
+    drawLCD(current_score);
+
+    read_dual_sensors(&io, &measureFront, &measureRear);
+    bat_12V_voltage = analogRead(1) * 5.2 * 3300/4096;
+
+    digital_io_read = 0;
+    for (int pin_id = 0; pin_id < 4; pin_id++)
+    {
+        digital_io_read |= io.myDigitalRead(100+pin_id) << pin_id;
+    }
+
     for (int j = 0; j < 1; j++)
     {
-        //loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info);
+        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read);
 
         stepperStruct.current = 200; //*50mA
         stepperStruct.accel = 200; //mm/s2
@@ -104,25 +132,25 @@ void loop()
 
         //Serial.println(stepper_info.distance_to_go);
 
-        /*myPersistentServos[0]->angle = SERVO_1_msg.angle_s1;
+        myPersistentServos[0]->angle = SERVO_1_msg.angle_s1;
         myPersistentServos[0]->speed = SERVO_1_msg.speed_s1;
         myPersistentServos[1]->angle = SERVO_1_msg.angle_s2;
         myPersistentServos[1]->speed = SERVO_1_msg.speed_s2;
         myPersistentServos[2]->angle = SERVO_1_msg.angle_s3;
         myPersistentServos[2]->speed = SERVO_1_msg.speed_s3;
         myPersistentServos[3]->angle = SERVO_1_msg.angle_s4;
-        myPersistentServos[3]->speed = SERVO_1_msg.speed_s4;*/
+        myPersistentServos[3]->speed = SERVO_1_msg.speed_s4;
         
-        /*myPersistentServos[4]->angle = SERVO_2_msg.angle_s1;
+        myPersistentServos[4]->angle = SERVO_2_msg.angle_s1;
         myPersistentServos[4]->speed = SERVO_2_msg.speed_s1;
         myPersistentServos[5]->angle = SERVO_2_msg.angle_s2;
         myPersistentServos[5]->speed = SERVO_2_msg.speed_s2;
         myPersistentServos[6]->angle = SERVO_2_msg.angle_s3;
         myPersistentServos[6]->speed = SERVO_2_msg.speed_s3;
         myPersistentServos[7]->angle = SERVO_2_msg.angle_s4;
-        myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;*/
+        myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;
 
-        //updateServos(myPersistentServos);
+        updateServos(myPersistentServos);
     }
     //delay(5);
   }

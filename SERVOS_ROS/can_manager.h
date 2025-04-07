@@ -66,12 +66,12 @@ static uint32_t gSentFrameCount = 0 ;
 //   LOOP
 //----------------------------------------------------------------------------------------
 
-void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage* SERVO_2_msg, Stepper* stepperStruct, StepperInfo* stepper_info) {
+void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage* SERVO_2_msg, Stepper* stepperStruct, StepperInfo* stepper_info, uint16_t bat_12V_voltage, uint8_t digital_io_read) {
   //Serial.print("."); // debug
   pinged = true; // force sending a CAN message
   CANMessage frame ;
   if (gBlinkLedDate < millis ()) {
-    gBlinkLedDate += 500 ;
+    gBlinkLedDate += 100 ;
     //digitalWrite (LED_BUILTIN, !digitalRead (LED_BUILTIN)) ;
 
     bool l_print_debug = true;
@@ -83,12 +83,12 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
       Serial.print ("Receive: ") ;
       Serial.print (gReceivedFrameCount) ;
       Serial.print (" ") ;
-      Serial.print (" STATUS 0x") ;
+      /*Serial.print (" STATUS 0x") ;
       Serial.print (TWAI_STATUS_REG, HEX) ;
       Serial.print (" RXERR ") ;
       Serial.print (TWAI_RX_ERR_CNT_REG) ;
       Serial.print (" TXERR ") ;
-      Serial.println (TWAI_TX_ERR_CNT_REG) ;
+      Serial.println (TWAI_TX_ERR_CNT_REG) ;*/
     }
     if (pinged){
       frame.id = 42;
@@ -108,7 +108,7 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
     {
       frame.data[i] = 0;
     }
-    uint16_t batt_mv = 12000;
+    uint16_t batt_mv = bat_12V_voltage;
     frame.data[1] = batt_mv%256;
     frame.data[0] = batt_mv>>8;
     ACAN_ESP32::can.tryToSend (frame) ;
@@ -124,6 +124,16 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
     frame.data[2] = stepper_info->homing_sequences_done;
     frame.data[1] = stepper_info->distance_to_go%256;
     frame.data[0] = stepper_info->distance_to_go>>8;
+    ACAN_ESP32::can.tryToSend (frame) ;
+
+    frame.id = can_ids::DIGITAL_INPUTS;
+    frame.rtr = 0;
+    frame.len = sizeof(DigitalInputs);
+    for (int i = 0; i < 8; i++)
+    {
+      frame.data[i] = 0;
+    }
+    frame.data[0] = digital_io_read;
     ACAN_ESP32::can.tryToSend (frame) ;
   }
 
