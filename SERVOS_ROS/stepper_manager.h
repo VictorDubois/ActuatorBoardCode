@@ -68,7 +68,7 @@ StepperInfo loopStepper(Stepper& stepperStruct) {
         Serial.println(driver.rms_current());*/
 
     }
-    bool stillWorksRoDo = true;
+    bool stillWorkToDo = true;
     switch(stepperStruct.mode)
     {
       case stepper_mode::DISABLE:
@@ -107,9 +107,9 @@ StepperInfo loopStepper(Stepper& stepperStruct) {
         }
         for(int j = 0; j< 100; j++)
         {
-          stillWorksRoDo = stepper.run();
+          stillWorkToDo = stepper.run();
         }
-        if (!stillWorksRoDo)
+        if (!stillWorkToDo)
         {
           Serial.println("target reached!");
         }
