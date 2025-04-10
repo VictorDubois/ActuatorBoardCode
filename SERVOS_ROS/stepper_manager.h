@@ -2,17 +2,18 @@
  * Author Teemu Mäntykallio
  * Initializes the library and runs the stepper motor.
  */
-
+#pragma once
 #include <TMCStepper.h>
 #include <HardwareSerial.h>
+#include "CanStruct/can_structs.h"
 
 #define END_STOP_PIN           36
 
-#define EN_PIN           14 // Enable
-#define DIR_PIN          13 // Direction
-#define STEP_PIN         2 // Step
-#define SW_RX            15 // TMC2208/TMC2224 SoftwareSerial receive pin
-#define SW_TX            16 // TMC2208/TMC2224 SoftwareSerial transmit pin
+#define EN_PIN           5 // Enable
+#define DIR_PIN          12 // Direction
+#define STEP_PIN         11 // Step
+#define SW_RX            2 // TMC2208/TMC2224 SoftwareSerial receive pin
+#define SW_TX            38 // TMC2208/TMC2224 SoftwareSerial transmit pin
 #define SERIAL_PORT Serial1 // TMC2208/TMC2224 HardwareSerial port
 
 #define R_SENSE 0.11f // Match to your driver

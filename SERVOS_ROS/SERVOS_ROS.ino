@@ -8,10 +8,22 @@
 #include <krabi_msgs/vacuum_pump.h>
 #include <std_msgs/Float32.h>
 */
+
+#define PAMI
+
 #include <Wire.h> 
 //#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
-//#include "can_structs.h"
-#include "can_manager.h"
+#include "CanStruct/can_structs.h"
+using namespace CAN;
+
+#ifndef PAMI
+  #include "can_manager.h"
+#endif
+
+#ifdef PAMI
+  #include "diff_drive_steppers.h"
+#endif
+
 #include "servos_manager.h"
 #include "LCD_manager.h"
 #include "RGBStrip_manager.h"
@@ -26,6 +38,14 @@ PersistentServo* myPersistentServos[NB_SERVOS];
 IOPotentiallyExpended io;
 VL53L0X_RangingMeasurementData_t measureFront;
 VL53L0X_RangingMeasurementData_t measureRear;
+
+#define STEPPER_POWER_ENABLE_PIN 5
+#define SERVO_POWER_ENABLE_PIN 44
+#define TRANSISTOR_1_PIN 104
+#define TRANSISTOR_2_PIN 9
+#define TRANSISTOR_3_PIN 105
+#define TRANSISTOR_4_PIN 7
+#define BAT_12V_PIN 1
 
 void setup()
 { 
@@ -62,14 +82,19 @@ void setup()
     strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
 
     turnlightsoff();
-
+#ifndef PAMI
     setupCAN();
+#endif
 
     setupVL53L0X(&io);
     io.myPinMode(100, INPUT);
     io.myPinMode(101, INPUT);
     io.myPinMode(102, INPUT);
     io.myPinMode(103, INPUT);
+    io.myPinMode(104, OUTPUT);
+    io.myPinMode(105, OUTPUT);
+    io.myPinMode(106, OUTPUT);
+    io.myPinMode(107, OUTPUT);
 
     Serial.println("end of Setup");
 
@@ -96,23 +121,38 @@ void loop()
 
   uint16_t bat_12V_voltage;
   uint8_t digital_io_read;
+  uint16_t digital_io_output;
+  uint8_t enables;
     
   for (int i = 0; i < 10; i++)
   {
     drawLCD(current_score);
 
     read_dual_sensors(&io, &measureFront, &measureRear);
-    bat_12V_voltage = analogRead(1) * 5.2 * 3300/4096;
+    bat_12V_voltage = analogRead(BAT_12V_PIN) * 5.2 * 3300/4096;
 
+    // Digital inputs
     digital_io_read = 0;
     for (int pin_id = 0; pin_id < 4; pin_id++)
     {
         digital_io_read |= io.myDigitalRead(100+pin_id) << pin_id;
     }
 
+    // Transistors
+    io.myDigitalWrite(TRANSISTOR_1_PIN, digital_io_output & (0x1 << 0));
+    io.myDigitalWrite(TRANSISTOR_2_PIN, digital_io_output & (0x1 << 1));
+    io.myDigitalWrite(TRANSISTOR_3_PIN, digital_io_output & (0x1 << 2));
+    io.myDigitalWrite(TRANSISTOR_4_PIN, digital_io_output & (0x1 << 3));
+
+    io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
+    //io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, enables & (0x1 << 1));
+
     for (int j = 0; j < 1; j++)
     {
-        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read);
+      #ifndef PAMI
+        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read, digital_io_output, enables);
+      #endif
+        
 
         stepperStruct.current = 200; //*50mA
         stepperStruct.accel = 200; //mm/s2
