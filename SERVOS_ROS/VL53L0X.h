@@ -64,12 +64,25 @@ void setID(IOPotentiallyExpended* io) {
   #endif
 }
 
-void read_dual_sensors(IOPotentiallyExpended* io, 
+bool obstaclePresent(VL53L0X_RangingMeasurementData_t* mesure, uint16_t distanceMax_mm)
+{
+  if (mesure->RangeStatus != 4)
+  {
+    return false;
+  }
+  if (mesure->RangeMilliMeter > distanceMax_mm)
+  {
+    return false;
+  }
+  return true;
+}
+
+bool read_dual_sensors(IOPotentiallyExpended* io, 
 VL53L0X_RangingMeasurementData_t* measureFront,
 VL53L0X_RangingMeasurementData_t* measureRear
 )
 {
-  lox1.rangingTest(measureFront, false); // pass in 'true' to get debug data printout!
+  return lox1.rangingTest(measureFront, false) && // pass in 'true' to get debug data printout!
   lox2.rangingTest(measureRear, false); // pass in 'true' to get debug data printout!
 }
 

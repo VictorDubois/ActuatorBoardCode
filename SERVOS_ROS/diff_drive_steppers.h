@@ -29,6 +29,17 @@
                      // Watterott TMC5160 uses 0.075
 
 
+enum trajectoryStep
+{
+  WAITING,
+  TO_RAMP,
+  ON_RAMP,
+  AFTER_RAMP,
+  TURN,
+  BACKUP,
+  TOWARD_EDGE,
+  END
+};
 //HardwareSerial MySerial0(0);
 
 TMC2208Stepper driver_left = TMC2208Stepper(&Serial1, R_SENSE);
@@ -39,12 +50,16 @@ constexpr uint32_t diff_steps_per_deg_pami = 80;
 constexpr uint8_t to_mA_accel_pami = 50;
 int32_t last_set_current_pami = 0;
 int32_t last_set_position_pami = 0;
+int32_t targetLeft = 0;
+int32_t targetRight = 0;
+
 
 #include <AccelStepper.h>
 AccelStepper stepper_left = AccelStepper(stepper_left.DRIVER, STEP_PIN_1, DIR_PIN_1);
 AccelStepper stepper_right = AccelStepper(stepper_left.DRIVER, STEP_PIN_2, DIR_PIN_2);
 
 trajectoryStep targetUpdatedTo = trajectoryStep::WAITING;
+trajectoryStep currentStep = trajectoryStep::TO_RAMP;
 
 void setupAccelStepPami() {
     //MySerial0.begin(115200, SERIAL_8N1, SW_RX, SW_TX);
@@ -78,24 +93,11 @@ void setupAccelStepPami() {
     pinMode(END_STOP_PIN, INPUT_PULLUP);
 }
 
-enum trajectoryStep
-{
-  WAITING,
-  TO_RAMP,
-  ON_RAMP,
-  AFTER_RAMP,
-  TURN,
-  BACKUP,
-  TOWARD_EDGE,
-  END
-};
 
-void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool penche_droite) {
-  trajectoryStep currentStep = trajectoryStep::WAITING;
-
+void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool penche_pente, bool teamIsBlue) {
   bool stillWorkToDo = false;
-  float speedLeft = 0;
-  float speedRight = 0;
+  float speedLeft = 100;
+  float speedRight = 100;
 
   if(stop)
   {
@@ -117,10 +119,12 @@ void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool
         targetRight += 550*steps_per_mm_pami;//600 - demi longueur du PAMI
       }
       
-      stepper_left.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stepper_right.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stillWorkToDo |= stepper_left.moveTo(targetLeft);
-      stillWorkToDo |= stepper_right.moveTo(targetRight);
+      stepper_left.setMaxSpeed(speedLeft);
+      stepper_right.setMaxSpeed(speedRight);
+      stepper_left.moveTo(targetLeft);
+      stepper_right.moveTo(targetRight);
+      stillWorkToDo |= stepper_left.run();
+      stillWorkToDo |= stepper_right.run();
 
       if (!stillWorkToDo)
       {
@@ -155,8 +159,10 @@ void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool
       
       stepper_left.setMaxSpeed(speedLeft);
       stepper_right.setMaxSpeed(speedRight);
-      stillWorkToDo |= stepper_left.moveTo(targetLeft);
-      stillWorkToDo |= stepper_right.moveTo(targetRight);
+      stepper_left.moveTo(targetLeft);
+      stepper_right.moveTo(targetRight);
+      stillWorkToDo |= stepper_left.run();
+      stillWorkToDo |= stepper_right.run();
 
       if (!stillWorkToDo)
       {
@@ -173,10 +179,12 @@ void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool
         targetRight += 200*steps_per_mm_pami;
       }
       
-      stepper_left.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stepper_right.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stillWorkToDo |= stepper_left.moveTo(targetLeft);
-      stillWorkToDo |= stepper_right.moveTo(targetRight);
+      stepper_left.setMaxSpeed(speedLeft);
+      stepper_right.setMaxSpeed(speedRight);
+      stepper_left.moveTo(targetLeft);
+      stepper_right.moveTo(targetRight);
+      stillWorkToDo |= stepper_left.run();
+      stillWorkToDo |= stepper_right.run();
 
       if (!stillWorkToDo)
       {
@@ -188,7 +196,7 @@ void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool
       stepper_right.enableOutputs();
       if (targetUpdatedTo != trajectoryStep::TURN)
       {
-        if(teamColorIsBlue)
+        if(teamIsBlue)
         {
           targetLeft -= 200*steps_per_mm_pami;
           targetRight += 200*steps_per_mm_pami;
@@ -200,10 +208,12 @@ void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool
         }
       }
       
-      stepper_left.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stepper_right.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stillWorkToDo |= stepper_left.moveTo(targetLeft);
-      stillWorkToDo |= stepper_right.moveTo(targetRight);
+      stepper_left.setMaxSpeed(speedLeft);
+      stepper_right.setMaxSpeed(speedRight);
+      stepper_left.moveTo(targetLeft);
+      stepper_right.moveTo(targetRight);
+      stillWorkToDo |= stepper_left.run();
+      stillWorkToDo |= stepper_right.run();
 
       if (!stillWorkToDo)
       {
@@ -219,10 +229,12 @@ void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool
         targetRight -= 200*steps_per_mm_pami;
       }
       
-      stepper_left.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stepper_right.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stillWorkToDo |= stepper_left.moveTo(targetLeft);
-      stillWorkToDo |= stepper_right.moveTo(targetRight);
+      stepper_left.setMaxSpeed(speedLeft);
+      stepper_right.setMaxSpeed(speedRight);
+      stepper_left.moveTo(targetLeft);
+      stepper_right.moveTo(targetRight);
+      stillWorkToDo |= stepper_left.run();
+      stillWorkToDo |= stepper_right.run();
 
       if (!stillWorkToDo)
       {
@@ -238,10 +250,12 @@ void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool
         targetRight += 360*steps_per_mm_pami;
       }
       
-      stepper_left.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stepper_right.setMaxSpeed(stepperStruct.speed*steps_per_mm_pami);
-      stillWorkToDo |= stepper_left.moveTo(targetLeft);
-      stillWorkToDo |= stepper_right.moveTo(targetRight);
+      stepper_left.setMaxSpeed(speedLeft);
+      stepper_right.setMaxSpeed(speedRight);
+      stepper_left.moveTo(targetLeft);
+      stepper_right.moveTo(targetRight);
+      stillWorkToDo |= stepper_left.run();
+      stillWorkToDo |= stepper_right.run();
 
       if (!stillWorkToDo)
       {
@@ -254,92 +268,6 @@ void loopStepperPami(Stepper& stepperStruct, bool stop, bool penche_gauche, bool
       break;
   }
   
-  //stepper.moveTo(stepperStruct.position*steps_per_mm);
-
-    //if(driver.rms_current() != stepperStruct.current * to_mA_accel)
-    {
-        /*Serial.println("Set rms_current to :");
-        Serial.println(stepperStruct.current * to_mA_accel);
-        Serial.println(driver.rms_current());
-        // Check, to avoid calling unecessarily
-        driver.rms_current(stepperStruct.current * to_mA_accel);
-        Serial.println(driver.rms_current());*/
-
-    }
-    /*bool stillWorkToDo = true;
-    switch(stepperStruct.mode)
-    {
-      case stepper_mode::DISABLE:
-        last_set_position = 0;
-        stepper.disableOutputs();
-        break;
-      case stepper_mode::POSITION:
-        stepper.enableOutputs();
-
-        if(stepper.acceleration() != stepperStruct.accel * steps_per_mm)
-        {
-            Serial.println("Set accel to :");
-            Serial.println(stepperStruct.accel * steps_per_mm);
-            Serial.println(stepper.acceleration());
-
-            // Check, to avoid calling unecessarily
-            stepper.setAcceleration(stepperStruct.accel * steps_per_mm);
-            Serial.println(stepper.acceleration());
-        }
-
-        if(stepper.maxSpeed() != stepperStruct.speed * steps_per_mm)
-        {
-            Serial.println("Set MaxSpeed to :");
-            Serial.println(stepperStruct.speed * steps_per_mm);
-            Serial.println(stepper.maxSpeed());
-            // Check, to avoid calling unecessarily
-            stepper.setMaxSpeed(stepperStruct.speed * steps_per_mm);
-            Serial.println(stepper.maxSpeed());
-        }
-        if(last_set_position != stepperStruct.position*steps_per_mm)
-        {
-            Serial.print("New Target : ");
-            Serial.println(stepperStruct.position*steps_per_mm);
-            stepper.moveTo(stepperStruct.position*steps_per_mm);
-            last_set_position = stepperStruct.position*steps_per_mm;
-        }
-        for(int j = 0; j< 100; j++)
-        {
-          stillWorkToDo = stepper.run();
-        }
-        if (!stillWorkToDo)
-        {
-          Serial.println("target reached!");
-        }
-        stepper_info.distance_to_go = stepper.distanceToGo()/steps_per_mm;
-        break;
-      case stepper_mode::SPEED:
-        last_set_position = 0;
-        stepper.enableOutputs();
-        stepper.setSpeed(stepperStruct.speed*steps_per_mm);
-
-        stepper.move(stepperStruct.position*steps_per_mm);
-        stepper.runSpeed();
-        break;
-      case stepper_mode::HOMING:
-        last_set_position = 0;
-        stepper.enableOutputs();
-        stepper.setSpeed(stepperStruct.speed*steps_per_mm);
-        stepper.move(stepperStruct.position*steps_per_mm);
-        while(digitalRead(END_STOP_PIN) == LOW)
-        {
-            stepper.runSpeed();
-        }
-        stepper.setCurrentPosition(0);
-        stepper_info.homing_sequences_done++;
-        stepper.disableOutputs();
-        break;
-      default:
-        last_set_position = 0;
-        stepper.disableOutputs();
-        Serial.println("Unknown stepper mode!");
-        break;
-    }*/
     
-    return ;
+  return ;
 }

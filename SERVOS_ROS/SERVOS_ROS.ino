@@ -9,7 +9,7 @@
 #include <std_msgs/Float32.h>
 */
 
-#define PAMI
+//#define PAMI
 
 #include <Wire.h> 
 //#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
@@ -18,6 +18,7 @@ using namespace CAN;
 
 #ifndef PAMI
   #include "can_manager.h"
+  #include "stepper_manager.h"
 #endif
 
 #ifdef PAMI
@@ -28,7 +29,6 @@ using namespace CAN;
 #include "LCD_manager.h"
 #include "RGBStrip_manager.h"
 #include "pressure_sensor_manager.h"
-#include "stepper_manager.h"
 #include "VL53L0X.h"
 #include "io_expender_manager.h"
 
@@ -38,6 +38,7 @@ PersistentServo* myPersistentServos[NB_SERVOS];
 IOPotentiallyExpended io;
 VL53L0X_RangingMeasurementData_t measureFront;
 VL53L0X_RangingMeasurementData_t measureRear;
+bool teamIsBlue = false;
 
 #define STEPPER_POWER_ENABLE_PIN 5
 #define SERVO_POWER_ENABLE_PIN 44
@@ -46,6 +47,10 @@ VL53L0X_RangingMeasurementData_t measureRear;
 #define TRANSISTOR_3_PIN 105
 #define TRANSISTOR_4_PIN 7
 #define BAT_12V_PIN 1
+#define TIRETTE_PAMI_PIN 100
+#define TEAM_COLOR_PAMI_PIN 101
+
+#ifndef PAMI
 
 void setup()
 { 
@@ -70,8 +75,8 @@ void setup()
 
     delay(10);
     Serial.println("before setupAccelStep");
-
     setupAccelStep();
+    
     Serial.println("after setupAccelStep");
 
     //digitalWrite(SUCTION_CUP_PIN, HIGH);
@@ -82,11 +87,8 @@ void setup()
     strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
 
     turnlightsoff();
-#ifndef PAMI
     setupCAN();
-#endif
-
-    setupVL53L0X(&io);
+    
     io.myPinMode(100, INPUT);
     io.myPinMode(101, INPUT);
     io.myPinMode(102, INPUT);
@@ -96,8 +98,9 @@ void setup()
     io.myPinMode(106, OUTPUT);
     io.myPinMode(107, OUTPUT);
 
-    Serial.println("end of Setup");
+    setupVL53L0X(&io);
 
+    Serial.println("end of Setup");
 
     // Homing
     Stepper stepperStructHoming;
@@ -109,8 +112,52 @@ void setup()
     loopStepper(stepperStructHoming);
 
 }
+#else
+void setup() // PAMI
+{
+  Serial.begin(115200);
+  Serial.setTimeout(100);
+
+  io.myPinMode(100, INPUT);
+  io.myPinMode(101, INPUT);
+  io.myPinMode(102, INPUT);
+  io.myPinMode(103, INPUT);
+  io.myPinMode(104, OUTPUT);
+  io.myPinMode(105, OUTPUT);
+  io.myPinMode(106, OUTPUT);
+  io.myPinMode(107, OUTPUT);
+  
+  setupVL53L0X(&io);
+
+  setupAccelStepPami();
+
+  // Wait Tirette
+  while(io.myDigitalRead(TIRETTE_PAMI_PIN))
+  {
+    delay(10);
+  }
+  teamIsBlue = io.myDigitalRead(TEAM_COLOR_PAMI_PIN);
+  delay(85000); // wait for PAMI-time to come
+}
+
+#endif
 
 
+#ifdef PAMI
+void loop()
+{
+    read_dual_sensors(&io, &measureFront, &measureRear);
+
+    for (int i = 0; i< 10; i++)// run loopStepper more often than slow I2C calls
+    {
+      bool stop = obstaclePresent(measureFront, 100);
+      bool pencheGauche = false;
+      bool pencheDroite = false;
+      bool penchePente = false;
+      loopStepperPami(stop, pencheGauche, pencheDroite, teamIsBlue, penchePente);
+    }
+}
+#else
 void loop()
 {  
   double pressure = 0;//readPressure();
@@ -128,7 +175,7 @@ void loop()
   {
     drawLCD(current_score);
 
-    read_dual_sensors(&io, &measureFront, &measureRear);
+    //read_dual_sensors(&io, &measureFront, &measureRear);
     bat_12V_voltage = analogRead(BAT_12V_PIN) * 5.2 * 3300/4096;
 
     // Digital inputs
@@ -147,11 +194,10 @@ void loop()
     io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
     //io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, enables & (0x1 << 1));
 
-    for (int j = 0; j < 1; j++)
+    for (int j = 0; j < 1; j++)// run loopCAN more often than slow I2C calls
     {
-      #ifndef PAMI
         loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read, digital_io_output, enables);
-      #endif
+
         
 
         stepperStruct.current = 200; //*50mA
@@ -164,7 +210,8 @@ void loop()
         }
         stepperStruct.mode = stepper_mode::POSITION;
 
-        for(int i = 0; i < 10; i++)
+
+        for(int i = 0; i < 10; i++)// run loopStepper more often than slow stuff
         {
           stepper_info = loopStepper(stepperStruct);
         }
@@ -198,3 +245,4 @@ void loop()
   //Serial.println(myPersistentServos[0]->angle);
   //Serial.println(current_score);
 }
+#endif
