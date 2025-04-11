@@ -2,14 +2,8 @@
 * Author : Victor Dubois
 ****************************************************************************/
 
-/*#include <ros.h>
-#include <krabi_msgs/servo_cmd.h>
-#include <krabi_msgs/actuators.h>
-#include <krabi_msgs/vacuum_pump.h>
-#include <std_msgs/Float32.h>
-*/
 
-#define PAMI
+//#define PAMI
 
 #include <Wire.h> 
 //#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
@@ -58,6 +52,15 @@ void setup()
 { 
     Serial.begin(115200);
     Serial.setTimeout(100);
+
+    Wire.begin();
+    Wire.setClock(100000);
+
+    #ifdef __AVR__
+      Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
+    #else
+      Wire.setTimeOut(3);//ms // Todo: test this on ESP32
+    #endif
 
 
     //if (!io_exp.begin(LCM2004A_I2C_ADR1)) io_exp.begin(LCM2004A_I2C_ADR2);
@@ -119,6 +122,15 @@ void setup() // PAMI
 {
   Serial.begin(115200);
   Serial.setTimeout(100);
+
+  Wire.begin();
+  Wire.setClock(100000);
+
+  #ifdef __AVR__
+    Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
+  #else
+    Wire.setTimeOut(3);//ms
+  #endif
 
   myPersistentServos[0] = new PersistentServo(35);
 

@@ -88,15 +88,6 @@ void writeFullScreen()
 
 void LCD_setup()
 {
-    Wire.begin();
-    Wire.setClock(100000);
-
-    #ifdef __AVR__
-      Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
-    #else
-      Wire.setTimeOut(3);//ms
-    #endif
-
     delay(10);
 
     lcd.init();                      // initialize the lcd 

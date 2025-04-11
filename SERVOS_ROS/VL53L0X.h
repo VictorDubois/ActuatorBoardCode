@@ -1,5 +1,5 @@
 
-#include "Adafruit_VL53L0X.h"
+#include "Adafruit_VL53L0X.h" // https://github.com/adafruit/Adafruit_VL53L0X
 #include "io_expender_manager.h"
 
 #define LOX_SDA 26
@@ -118,7 +118,7 @@ void setupVL53L0X(IOPotentiallyExpended* io) {
 
   Serial.println(F("Shutdown pins inited..."));
 
-  Wire.begin(LOX_SDA, LOX_SCL);
+  //Wire.begin(LOX_SDA, LOX_SCL);
 
   io->myDigitalWrite(SHT_LOX1, LOW);
   io->myDigitalWrite(SHT_LOX2, LOW);

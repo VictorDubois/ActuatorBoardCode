@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jm_PCF8574.h>
+#include <jm_PCF8574.h> // https://github.com/jmparatte/jm_PCF8574
 #define LCM2004A_I2C_ADR1	((uint8_t) 0x3F)		// default PCF8574A I2C address
 #define LCM2004A_I2C_ADR2	((uint8_t) 0x27)		// alternative PCF8574 I2C address
 

@@ -3,7 +3,7 @@
  * Initializes the library and runs the stepper motor.
  */
 #pragma once
-#include <TMCStepper.h>
+#include <TMCStepper.h> // https://github.com/adafruit/Adafruit_MPU6050
 #include <HardwareSerial.h>
 #include "CanStruct/can_structs.h"
 

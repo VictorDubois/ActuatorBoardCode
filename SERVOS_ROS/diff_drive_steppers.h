@@ -3,7 +3,7 @@
  * Initializes the library and runs the stepper motor.
  */
 
-#include <TMCStepper.h>
+#include <TMCStepper.h> //https://github.com/teemuatlut/TMCStepper
 #include <HardwareSerial.h>
 
 #define END_STOP_PIN           36
