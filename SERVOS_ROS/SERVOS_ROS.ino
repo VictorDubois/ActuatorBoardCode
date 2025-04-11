@@ -9,7 +9,7 @@
 #include <std_msgs/Float32.h>
 */
 
-//#define PAMI
+#define PAMI
 
 #include <Wire.h> 
 //#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
@@ -23,6 +23,7 @@ using namespace CAN;
 
 #ifdef PAMI
   #include "diff_drive_steppers.h"
+  #include "MPU6050.h"
 #endif
 
 #include "servos_manager.h"
@@ -39,6 +40,7 @@ IOPotentiallyExpended io;
 VL53L0X_RangingMeasurementData_t measureFront;
 VL53L0X_RangingMeasurementData_t measureRear;
 bool teamIsBlue = false;
+unsigned long endOfMatch = millis() + 15000;
 
 #define STEPPER_POWER_ENABLE_PIN 5
 #define SERVO_POWER_ENABLE_PIN 44
@@ -118,6 +120,8 @@ void setup() // PAMI
   Serial.begin(115200);
   Serial.setTimeout(100);
 
+  myPersistentServos[0] = new PersistentServo(35);
+
   io.myPinMode(100, INPUT);
   io.myPinMode(101, INPUT);
   io.myPinMode(102, INPUT);
@@ -131,6 +135,8 @@ void setup() // PAMI
 
   setupAccelStepPami();
 
+  setupMPU6050();
+
   // Wait Tirette
   while(io.myDigitalRead(TIRETTE_PAMI_PIN))
   {
@@ -138,24 +144,43 @@ void setup() // PAMI
   }
   teamIsBlue = io.myDigitalRead(TEAM_COLOR_PAMI_PIN);
   delay(85000); // wait for PAMI-time to come
+
+  
 }
 
 #endif
 
 
 #ifdef PAMI
+void funnyAction()
+{
+  myPersistentServos[0]->angle = 45;
+  if (millis()/1000 %2)
+  {
+    myPersistentServos[0]->angle = 100;
+  }
+  myPersistentServos[0]->update();
+}
+
 void loop()
 {
+    bool tiltedRight = false;
+    bool tiltedLeft = false;
+    bool tiltedFront = false;
     read_dual_sensors(&io, &measureFront, &measureRear);
+    bool stop = obstaclePresent(&measureFront, 100);
+    updateTiltedStatus(tiltedRight, tiltedLeft, tiltedFront);
 
+    if (millis() > endOfMatch)
+    {
+      funnyAction();
+      stop = true;
+    }
     for (int i = 0; i< 10; i++)// run loopStepper more often than slow I2C calls
     {
-      bool stop = obstaclePresent(measureFront, 100);
-      bool pencheGauche = false;
-      bool pencheDroite = false;
-      bool penchePente = false;
-      loopStepperPami(stop, pencheGauche, pencheDroite, teamIsBlue, penchePente);
+      loopStepperPami(stop, tiltedLeft, tiltedRight, teamIsBlue, tiltedFront);
     }
+    
 }
 #else
 void loop()
