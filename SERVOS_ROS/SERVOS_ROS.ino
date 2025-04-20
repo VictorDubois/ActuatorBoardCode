@@ -161,7 +161,8 @@ void setup() // PAMI
   }
   teamIsBlue = io.myDigitalRead(TEAM_COLOR_PAMI_PIN);
   delay(85000); // wait for PAMI-time to come
-
+  endOfMatch = millis() + 15000;
+  Serial.println("PAMI GO !");
   
 }
 
