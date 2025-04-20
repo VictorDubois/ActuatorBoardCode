@@ -34,7 +34,7 @@ IOPotentiallyExpended io;
 VL53L0X_RangingMeasurementData_t measureFront;
 VL53L0X_RangingMeasurementData_t measureRear;
 bool teamIsBlue = false;
-unsigned long endOfMatch = millis() + 15000;
+unsigned long endOfMatch;
 
 #define STEPPER_POWER_ENABLE_PIN 5
 #define SERVO_POWER_ENABLE_PIN 44
@@ -123,6 +123,9 @@ void setup() // PAMI
   Serial.begin(115200);
   Serial.setTimeout(100);
 
+    Serial.println("PAMI setup");
+
+
   Wire.begin();
   Wire.setClock(100000);
 
@@ -133,6 +136,8 @@ void setup() // PAMI
   #endif
 
   myPersistentServos[0] = new PersistentServo(35);
+
+  io.begin();
 
   io.myPinMode(100, INPUT);
   io.myPinMode(101, INPUT);
@@ -187,6 +192,9 @@ void loop()
     {
       funnyAction();
       stop = true;
+      Serial.println("End of match!");
+      disableSteppers();
+      delay(1000);
     }
     for (int i = 0; i< 10; i++)// run loopStepper more often than slow I2C calls
     {
@@ -194,7 +202,7 @@ void loop()
     }
     
 }
-#else
+#else //not PAMI
 void loop()
 {  
   double pressure = 0;//readPressure();

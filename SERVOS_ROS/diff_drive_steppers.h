@@ -45,7 +45,7 @@ enum trajectoryStep
 TMC2208Stepper driver_left = TMC2208Stepper(&Serial1, R_SENSE);
 TMC2208Stepper driver_right = TMC2208Stepper(&Serial2, R_SENSE);
 
-constexpr uint32_t steps_per_mm_pami = 80;
+constexpr uint32_t steps_per_mm_pami = 20;
 constexpr uint32_t diff_steps_per_deg_pami = 80;
 constexpr uint8_t to_mA_accel_pami = 50;
 int32_t last_set_current_pami = 0;
@@ -96,11 +96,12 @@ void setupAccelStepPami() {
 
 void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool penche_pente, bool teamIsBlue) {
   bool stillWorkToDo = false;
-  float speedLeft = 100;
-  float speedRight = 100;
+  float speedLeft = 1500 * steps_per_mm_pami;
+  float speedRight = 1500 * steps_per_mm_pami;
 
   if(stop)
   {
+    Serial.println("stop");
     stepper_left.setSpeed(0);
     stepper_right.setSpeed(0);
     stepper_left.runSpeed();
@@ -115,6 +116,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
       stepper_right.enableOutputs();
       if (targetUpdatedTo != trajectoryStep::TO_RAMP)
       {
+        targetUpdatedTo = trajectoryStep::TO_RAMP;
         targetLeft += 550*steps_per_mm_pami;//600 - demi longueur du PAMI
         targetRight += 550*steps_per_mm_pami;//600 - demi longueur du PAMI
       }
@@ -128,6 +130,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
 
       if (!stillWorkToDo)
       {
+        Serial.println("Start ON_RAMP");
         currentStep = ON_RAMP;
       }
       break;
@@ -136,6 +139,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
       stepper_right.enableOutputs();
       if (targetUpdatedTo != trajectoryStep::ON_RAMP)
       {
+        targetUpdatedTo = trajectoryStep::ON_RAMP;
         targetLeft += 404*steps_per_mm_pami;
         targetRight += 404*steps_per_mm_pami;
       }
@@ -167,6 +171,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
       if (!stillWorkToDo)
       {
         // Todo: use accelerometer
+        Serial.println("Start AFTER_RAMP");
         currentStep = AFTER_RAMP;
       }
       break;
@@ -175,6 +180,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
       stepper_right.enableOutputs();
       if (targetUpdatedTo != trajectoryStep::AFTER_RAMP)
       {
+        targetUpdatedTo = trajectoryStep::AFTER_RAMP;
         targetLeft += 200*steps_per_mm_pami;
         targetRight += 200*steps_per_mm_pami;
       }
@@ -188,6 +194,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
 
       if (!stillWorkToDo)
       {
+        Serial.println("Start TURN");
         currentStep = trajectoryStep::TURN;
       }
       break;
@@ -196,6 +203,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
       stepper_right.enableOutputs();
       if (targetUpdatedTo != trajectoryStep::TURN)
       {
+        targetUpdatedTo = trajectoryStep::TURN;
         if(teamIsBlue)
         {
           targetLeft -= 200*steps_per_mm_pami;
@@ -217,6 +225,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
 
       if (!stillWorkToDo)
       {
+        Serial.println("Start BACKUP");
         currentStep = trajectoryStep::BACKUP;
       }
       break;
@@ -225,6 +234,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
       stepper_right.enableOutputs();
       if (targetUpdatedTo != trajectoryStep::BACKUP)
       {
+        targetUpdatedTo = trajectoryStep::BACKUP;
         targetLeft -= 200*steps_per_mm_pami;
         targetRight -= 200*steps_per_mm_pami;
       }
@@ -238,6 +248,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
 
       if (!stillWorkToDo)
       {
+        Serial.println("Start TOWARD_EDGE");
         currentStep = trajectoryStep::TOWARD_EDGE;
       }
       break;
@@ -246,6 +257,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
       stepper_right.enableOutputs();
       if (targetUpdatedTo != trajectoryStep::TOWARD_EDGE)
       {
+        targetUpdatedTo = trajectoryStep::TOWARD_EDGE;
         targetLeft += 360*steps_per_mm_pami;
         targetRight += 360*steps_per_mm_pami;
       }
@@ -259,6 +271,7 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
 
       if (!stillWorkToDo)
       {
+        Serial.println("END!");
         currentStep = trajectoryStep::END;
       }
       break;
@@ -270,4 +283,10 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
   
     
   return ;
+}
+
+void disableSteppers()
+{
+  stepper_left.disableOutputs();
+  stepper_right.disableOutputs();
 }
