@@ -41,10 +41,10 @@ void setupCAN () {
 //--- Configure ESP32 CAN
   Serial.println ("Configure ESP32 CAN") ;
   ACAN_ESP32_Settings settings (DESIRED_BIT_RATE) ;
-  //settings.mRequestedCANMode = ACAN_ESP32_Settings::LoopBackMode ;
+  settings.mRequestedCANMode = ACAN_ESP32_Settings::NormalMode ;
   
-  settings.mRxPin = GPIO_NUM_4 ; // Optional, default Tx pin is GPIO_NUM_4
-  settings.mTxPin = GPIO_NUM_5 ; // Optional, default Rx pin is GPIO_NUM_5
+  settings.mRxPin = GPIO_NUM_48 ; // Optional, default Tx pin is GPIO_NUM_4
+  settings.mTxPin = GPIO_NUM_47 ; // Optional, default Rx pin is GPIO_NUM_5
   const uint32_t errorCode = ACAN_ESP32::can.begin (settings) ;
   if (errorCode != 0) {
     Serial.print ("Configuration error 0x") ;
