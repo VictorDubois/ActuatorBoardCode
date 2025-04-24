@@ -9,6 +9,11 @@ struct IOPotentiallyExpended
 {
   jm_PCF8574 io_exp; // I2C address fixed later by begin(...)
 
+  bool begin(uint8_t addr)
+  {
+    return io_exp.begin(addr);
+  }
+
   bool begin()
   {
     return io_exp.begin(LCM2004A_I2C_ADR1);
