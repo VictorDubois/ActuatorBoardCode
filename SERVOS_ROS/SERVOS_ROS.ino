@@ -20,6 +20,7 @@ using namespace CAN;
   #include "MPU6050.h"
 #endif
 
+#include "oled_manager.h"
 #include "servos_manager.h"
 #include "LCD_manager.h"
 #include "RGBStrip_manager.h"
@@ -46,26 +47,57 @@ unsigned long endOfMatch;
 #define TIRETTE_PAMI_PIN 100
 #define TEAM_COLOR_PAMI_PIN 101
 
-#ifndef PAMI
+#define I2C_SDA 13
+#define I2C_SCL 14
+
+#ifndef PAMI // Actuator board
 
 void setup()
 { 
     Serial.begin(115200);
     Serial.setTimeout(100);
 
-    Wire.begin();
+    Wire.begin(I2C_SDA, I2C_SCL);
     Wire.setClock(100000);
 
     #ifdef __AVR__
       Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
     #else
-      Wire.setTimeOut(3);//ms // Todo: test this on ESP32
+      Wire.setTimeOut(300);//ms // Todo: test this on ESP32
     #endif
 
 
     //if (!io_exp.begin(LCM2004A_I2C_ADR1)) io_exp.begin(LCM2004A_I2C_ADR2);
-    
-    LCD_setup();
+    /*while(true)
+    {
+      bool io_init = io.begin(LCM2004A_I2C_ADR1);
+      if (io_init)
+      {
+        while(true)
+        {
+            Serial.println("io_init LCM2004A_I2C_ADR1 true");
+        }
+      }
+      else
+      {
+        Serial.println("io_init false");
+      }
+
+      io_init = io.begin(LCM2004A_I2C_ADR2);
+      if (io_init)
+      {
+      while(true)
+        {
+            Serial.println("io_init LCM2004A_I2C_ADR2 true");
+        }      }
+      else
+      {
+        Serial.println("io_init false");
+      }
+      delay(1000);
+    }*/
+    //LCD_setup();
+    setupOled();
 
     int servoIndex = 0;
     myPersistentServos[servoIndex++] = new PersistentServo(35);
@@ -103,7 +135,13 @@ void setup()
     io.myPinMode(106, OUTPUT);
     io.myPinMode(107, OUTPUT);
 
-    setupVL53L0X(&io);
+    io.myPinMode(5, OUTPUT);
+    io.myPinMode(44, OUTPUT);
+    io.myPinMode(9, OUTPUT);
+    io.myPinMode(7, OUTPUT);
+    io.myPinMode(1, INPUT);
+
+    //setupVL53L0X(&io);
 
     Serial.println("end of Setup");
 
@@ -126,7 +164,7 @@ void setup() // PAMI
     Serial.println("PAMI setup");
 
 
-  Wire.begin();
+  Wire.begin(I2C_SDA, I2C_SCL);
   Wire.setClock(100000);
 
   #ifdef __AVR__
@@ -219,7 +257,9 @@ void loop()
     
   for (int i = 0; i < 10; i++)
   {
-    drawLCD(current_score);
+    //drawLCD(current_score);
+    current_score = (millis()/100)%256;
+    loopOled(current_score);
 
     //read_dual_sensors(&io, &measureFront, &measureRear);
     bat_12V_voltage = analogRead(BAT_12V_PIN) * 5.2 * 3300/4096;
