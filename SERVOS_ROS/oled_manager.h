@@ -77,12 +77,16 @@ void setupOled() {
   display.clearDisplay();
   
   display.setTextSize(2);             // Draw 2X-scale text
-  display.setTextColor(SSD1306_WHITE);
+  display.setTextColor(WHITE,BLACK);
   display.setCursor(0,0);             // Start at top-left corner
   display.println("score: ");
-    display.setTextSize(1); 
-
+  display.setTextSize(1); 
+  display.setCursor(0,16);             // Start at top-left corner
   display.print("Krabi Robotique");
+  display.setCursor(0,16);             // Start at top-left corner
+  display.print("Team:");
+    display.setCursor(0,70);             // Start at top-left corner
+
       display.setTextSize(2);             // Draw 2X-scale text
 
   display.display(); 
@@ -135,13 +139,49 @@ void setupOled() {
   */
 }
 
-void loopOled(uint8_t score) {
+void loopOled(int8_t remaining_time, int8_t isBlue) {
+
+  display.setCursor(80,24);   
+  display.setTextSize(1); 
+  display.print(remaining_time);
+  display.setCursor(50,24);   
+  if (isBlue == 1)
+  {
+    display.print("Blue  ");
+  }
+  else if (isBlue == 0)
+  {
+    display.print("Yellow");
+  }
+  else
+  {
+    display.print("??????");
+  }
+}
+
+void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue) {
     //int32_t begin = millis();
 
-  display.setTextColor(WHITE,BLACK);
   display.setCursor(70,0);   
   display.print(score);
   display.print("  ");
+  display.setCursor(80,24);   
+  display.setTextSize(1); 
+  display.print(remaining_time);
+  display.setCursor(50,24);   
+  if (isBlue == 1)
+  {
+    display.print("Blue  ");
+  }
+  else if (isBlue == 0)
+  {
+    display.print("Yellow");
+  }
+  else
+  {
+    display.print("??????");
+  }
+
   display.display();
 
   //int32_t end = millis();

@@ -3,16 +3,17 @@
 ****************************************************************************/
 
 
-//#define PAMI
+#define PAMI 1
 
 #include <Wire.h> 
 //#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
 #include "CanStruct/can_structs.h"
 using namespace CAN;
 
-#ifndef PAMI
+#ifndef PAMI // actuator board
   #include "can_manager.h"
   #include "stepper_manager.h"
+  #include "AX12_manager.h"
 #endif
 
 #ifdef PAMI
@@ -34,8 +35,9 @@ PersistentServo* myPersistentServos[NB_SERVOS];
 IOPotentiallyExpended io;
 VL53L0X_RangingMeasurementData_t measureFront;
 VL53L0X_RangingMeasurementData_t measureRear;
-bool teamIsBlue = false;
 unsigned long endOfMatch;
+int8_t teamIsBlue = -1;
+int8_t remaining_time_s = 127;
 
 #define STEPPER_POWER_ENABLE_PIN 5
 #define SERVO_POWER_ENABLE_PIN 44
@@ -125,6 +127,8 @@ void setup()
 
     turnlightsoff();
     setupCAN();
+
+    Serial.println("Setup CAN done");
     
     io.myPinMode(100, INPUT);
     io.myPinMode(101, INPUT);
@@ -147,13 +151,30 @@ void setup()
 
     // Homing
     Stepper stepperStructHoming;
-    stepperStructHoming.current = 200; //*50mA
-    stepperStructHoming.accel = 100; //mm/s2
-    stepperStructHoming.speed = 10; //mm/s
-    stepperStructHoming.position = -1000; //mm
+    stepperStructHoming.current = 2000; //*50mA
+    stepperStructHoming.accel = 200; //mm/s2
+    stepperStructHoming.speed = 100; //mm/s
+    stepperStructHoming.position = 0; //mm
     stepperStructHoming.mode = stepper_mode::HOMING;
+    //stepperStructHoming.mode = stepper_mode::POSITION;
     loopStepper(stepperStructHoming);
 
+    // Test stepper
+    if (false)
+    {
+      stepperStructHoming.mode = stepper_mode::POSITION;
+
+      while (true)
+      {
+            stepperStructHoming.position = 0; //mm
+
+          if ((millis()/1000) % 2)
+          {
+                stepperStructHoming.position = 100; //mm
+          }
+          loopStepper(stepperStructHoming);
+      }
+    }
 }
 #else
 void setup() // PAMI
@@ -175,7 +196,15 @@ void setup() // PAMI
 
   myPersistentServos[0] = new PersistentServo(35);
 
-  io.begin();
+  bool io_init = io.begin();
+  if (io_init)
+  {
+    Serial.println("io_init true");
+  }
+  else
+  {
+    Serial.println("io_init false");
+  }
 
   io.myPinMode(100, INPUT);
   io.myPinMode(101, INPUT);
@@ -185,6 +214,12 @@ void setup() // PAMI
   io.myPinMode(105, OUTPUT);
   io.myPinMode(106, OUTPUT);
   io.myPinMode(107, OUTPUT);
+
+  io.myPinMode(5, OUTPUT);
+  io.myPinMode(44, OUTPUT);
+  io.myPinMode(9, OUTPUT);
+  io.myPinMode(7, OUTPUT);
+  io.myPinMode(1, INPUT);
   
   setupVL53L0X(&io);
 
@@ -198,6 +233,7 @@ void setup() // PAMI
     delay(10);
   }
   teamIsBlue = io.myDigitalRead(TEAM_COLOR_PAMI_PIN);
+  
   delay(85000); // wait for PAMI-time to come
   endOfMatch = millis() + 15000;
   Serial.println("PAMI GO !");
@@ -226,6 +262,8 @@ void loop()
     read_dual_sensors(&io, &measureFront, &measureRear);
     bool stop = obstaclePresent(&measureFront, 100);
     updateTiltedStatus(tiltedRight, tiltedLeft, tiltedFront);
+
+    loopOled(remaining_time_s, teamIsBlue);
 
     if (millis() > endOfMatch)
     {
@@ -258,8 +296,8 @@ void loop()
   for (int i = 0; i < 10; i++)
   {
     //drawLCD(current_score);
-    current_score = (millis()/100)%256;
-    loopOled(current_score);
+    //current_score = (millis()/100)%256;
+    loopOled(current_score, remaining_time_s, teamIsBlue);
 
     //read_dual_sensors(&io, &measureFront, &measureRear);
     bat_12V_voltage = analogRead(BAT_12V_PIN) * 5.2 * 3300/4096;
@@ -282,20 +320,8 @@ void loop()
 
     for (int j = 0; j < 1; j++)// run loopCAN more often than slow I2C calls
     {
-        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read, digital_io_output, enables);
-
-        
-
-        stepperStruct.current = 200; //*50mA
-        stepperStruct.accel = 200; //mm/s2
-        stepperStruct.speed = 200; //mm/s
-        stepperStruct.position = 50; //mm
-        if ((millis()/1000)%2)
-        {
-          stepperStruct.position = 60; //mm
-        }
-        stepperStruct.mode = stepper_mode::POSITION;
-
+        //Serial.println("loopCan");
+        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue);
 
         for(int i = 0; i < 10; i++)// run loopStepper more often than slow stuff
         {
@@ -327,7 +353,7 @@ void loop()
     }
     //delay(5);
   }
-  Serial.println(stepper_info.distance_to_go);
+  //Serial.println(stepper_info.distance_to_go);
   //Serial.println(myPersistentServos[0]->angle);
   //Serial.println(current_score);
 }

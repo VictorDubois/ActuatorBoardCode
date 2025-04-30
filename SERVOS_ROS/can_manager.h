@@ -1,5 +1,5 @@
 #include <cstring>  // For memcpy
-#include "can_structs.h"
+#include "CanStruct/can_structs.h"
 
 using namespace CAN;
 
@@ -66,7 +66,7 @@ static uint32_t gSentFrameCount = 0 ;
 //   LOOP
 //----------------------------------------------------------------------------------------
 
-void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage* SERVO_2_msg, Stepper* stepperStruct, StepperInfo* stepper_info, uint16_t bat_12V_voltage, uint8_t digital_io_read, uint16_t& a_digital_io_output, uint8_t& a_enables) {
+void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage* SERVO_2_msg, Stepper* stepperStruct, StepperInfo* stepper_info, uint16_t bat_12V_voltage, uint8_t digital_io_read, uint16_t& a_digital_io_output, uint8_t& a_enables, int8_t a_remaining_time_s, int8_t a_is_blue) {
   //Serial.print("."); // debug
   pinged = true; // force sending a CAN message
   CANMessage frame ;
@@ -176,6 +176,8 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
     else if(frame.id == can_ids::SCORE)
     {
         a_current_score = frame.data[0];
+        a_remaining_time_s = frame.data[1];
+        a_is_blue = frame.data[2];
     }
     else if(frame.id == can_ids::DIGITAL_OUTPUTS)
     {
