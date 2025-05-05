@@ -7,7 +7,7 @@
 #include <HardwareSerial.h>
 #include "CanStruct/can_structs.h"
 
-#define END_STOP_PIN           36
+#define END_STOP_PIN           43 // =Servo8
 
 #define EN_PIN           5 // Enable
 #define DIR_PIN          12 // Direction
@@ -112,7 +112,7 @@ StepperInfo loopStepper(Stepper& stepperStruct) {
         }
         if (!stillWorkToDo)
         {
-          Serial.println("target reached!");
+          //Serial.println("target reached!");
         }
         stepper_info.distance_to_go = stepper.distanceToGo()/steps_per_mm;
         break;

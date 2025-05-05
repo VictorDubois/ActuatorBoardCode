@@ -1,5 +1,5 @@
 #include <Servo.h> // https://github.com/Dlloydev/ESP32-ESP32S2-AnalogWrite
-#define NB_SERVOS 4
+#define NB_SERVOS 7
 
 Servo servo_lib_handler = Servo();
 

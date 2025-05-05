@@ -3,7 +3,7 @@
 ****************************************************************************/
 
 
-#define PAMI 1
+//#define PAMI 1
 
 #include <Wire.h> 
 //#include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
@@ -53,6 +53,7 @@ int8_t remaining_time_s = 127;
 #define I2C_SCL 14
 
 #ifndef PAMI // Actuator board
+
 
 void setup()
 { 
@@ -109,7 +110,7 @@ void setup()
     myPersistentServos[servoIndex++] = new PersistentServo(40);
     myPersistentServos[servoIndex++] = new PersistentServo(41);
     myPersistentServos[servoIndex++] = new PersistentServo(42);
-    myPersistentServos[servoIndex++] = new PersistentServo(43);
+    //myPersistentServos[servoIndex++] = new PersistentServo(43);
 
 
     delay(10);
@@ -299,6 +300,9 @@ void loop()
     //current_score = (millis()/100)%256;
     loopOled(current_score, remaining_time_s, teamIsBlue);
 
+    updateDynamixels();
+    updateDynamixelsInfo();
+
     //read_dual_sensors(&io, &measureFront, &measureRear);
     bat_12V_voltage = analogRead(BAT_12V_PIN) * 5.2 * 3300/4096;
 
@@ -321,7 +325,9 @@ void loop()
     for (int j = 0; j < 1; j++)// run loopCAN more often than slow I2C calls
     {
         //Serial.println("loopCan");
-        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue);
+        loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue,
+        myAX12s[0].commands, myAX12s[1].commands, myAX12s[2].commands, myAX12s[3].commands, myAX12s[4].commands, myAX12s[5].commands, 
+        myAX12s[0].infos, myAX12s[1].infos, myAX12s[2].infos, myAX12s[3].infos, myAX12s[4].infos, myAX12s[5].infos);
 
         for(int i = 0; i < 10; i++)// run loopStepper more often than slow stuff
         {
@@ -346,8 +352,8 @@ void loop()
         myPersistentServos[5]->speed = SERVO_2_msg.speed_s2;
         myPersistentServos[6]->angle = SERVO_2_msg.angle_s3;
         myPersistentServos[6]->speed = SERVO_2_msg.speed_s3;
-        myPersistentServos[7]->angle = SERVO_2_msg.angle_s4;
-        myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;
+        //myPersistentServos[7]->angle = SERVO_2_msg.angle_s4;
+        //myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;
 
         updateServos(myPersistentServos);
     }
