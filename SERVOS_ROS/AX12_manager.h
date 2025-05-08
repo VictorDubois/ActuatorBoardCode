@@ -12,19 +12,31 @@ const uint16_t DYNAMIXEL_BAUDRATE = 57600;
 
 Dynamixel dxl(PIN_RTS);
 
-int dxl_goal_position_1[2];
-int dxl_goal_position_2[2];
-
 struct AX12
 {
     int8_t id;
     CAN::AX12Read infos;
     CAN::AX12Write commands;
 
-    AX12(int8_t a_id): id(a_id) {};
+    AX12(int8_t a_id): id(a_id) {
+        commands.torque_enable = 0;
+        commands.currentLimit = 0;
+        commands.max_accel = 0;
+        commands.position = 0;
+        commands.temperatureLimit = 65;
+        commands.mode = 0;
+        commands.max_speed = 0;
+
+        infos.current_position = 0;
+        infos.presentCurrent = 0;
+        infos.presentTemperature = 0;
+        infos.hardwareErrorStatus = 0;
+        infos.moving = 0;
+        infos.mode = 1;
+    }
 };
 
-AX12 myAX12s[NB_AX12] = {AX12(1), AX12(2), AX12(3), AX12(4)};
+AX12 myAX12s[NB_AX12 + 2] = {AX12(1), AX12(2), AX12(3), AX12(4), AX12(5), AX12(6)};
 
 using namespace arduino;
 
