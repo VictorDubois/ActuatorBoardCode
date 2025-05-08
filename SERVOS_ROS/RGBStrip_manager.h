@@ -37,6 +37,18 @@ uint16_t      pixelNumber = LED_COUNT;  // Total Number of Pixels
 // end NeoPixel
 
 
+void showTeamColor(bool isBlue)
+{
+    strip.setBrightness(255); // Set BRIGHTNESS to (max = 255)
+    auto l_team_color = strip.Color(255, 255, 0); // YELLOW
+    if (isBlue)
+    {
+        l_team_color = strip.Color(0, 0, 255); // BLUE
+    }
+    strip.fill(l_team_color, 0, 1);
+    strip.show();
+}
+
 
 void lightUpAll()
 {

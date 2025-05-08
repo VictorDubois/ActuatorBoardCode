@@ -234,6 +234,7 @@ void setup() // PAMI
     delay(10);
   }
   teamIsBlue = io.myDigitalRead(TEAM_COLOR_PAMI_PIN);
+  showTeamColor(teamIsBlue);
   
   delay(85000); // wait for PAMI-time to come
   endOfMatch = millis() + 15000;
@@ -299,6 +300,7 @@ void loop()
     //drawLCD(current_score);
     //current_score = (millis()/100)%256;
     loopOled(current_score, remaining_time_s, teamIsBlue);
+    showTeamColor(teamIsBlue);
 
     updateDynamixels();
     updateDynamixelsInfo();
