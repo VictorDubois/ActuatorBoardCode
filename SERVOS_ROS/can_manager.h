@@ -53,7 +53,7 @@ void decodeAX12Read(CANMessage* frame, AX12Read a_ax12_read)
 void decodeAX12Write(CANMessage* frame, AX12Write& a_ax12_write)
 {
     a_ax12_write.mode = frame->data_s8[0];
-    a_ax12_write.position = frame->data_s8[1] << 8 | frame->data_s8[2];
+    a_ax12_write.position = (frame->data_s8[1] << 8) | frame->data_s8[2];
     a_ax12_write.max_accel = frame->data_s8[3];
     a_ax12_write.max_speed = frame->data_s8[4];
     a_ax12_write.torque_enable = frame->data_s8[5];
@@ -139,7 +139,7 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
       frame.data[i] = 0;
     }
     uint16_t batt_mv = bat_12V_voltage;
-    frame.data[1] = batt_mv%256;
+    frame.data[1] = batt_mv & 0xFF;
     frame.data[0] = batt_mv>>8;
     ACAN_ESP32::can.tryToSend (frame) ;
 
@@ -152,7 +152,7 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
       frame.data[i] = 0;
     }
     frame.data[2] = stepper_info->homing_sequences_done;
-    frame.data[1] = stepper_info->distance_to_go%256;
+    frame.data[1] = stepper_info->distance_to_go & 0xFF;
     frame.data[0] = stepper_info->distance_to_go>>8;
     ACAN_ESP32::can.tryToSend (frame) ;
 
@@ -222,9 +222,9 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
     }
     else if(frame.id == STEPPER_CMD)
     {
-        stepperStruct->speed    = frame.data_s8[0] << 8 | frame.data_s8[1];
-        stepperStruct->accel    = frame.data_s8[2] << 8 | frame.data_s8[3];
-        stepperStruct->position = frame.data_s8[4] << 8 | frame.data_s8[5];
+        stepperStruct->speed    = (frame.data_s8[0] << 8) | frame.data_s8[1];
+        stepperStruct->accel    = (frame.data_s8[2] << 8) | frame.data_s8[3];
+        stepperStruct->position = (frame.data_s8[4] << 8) | frame.data_s8[5];
         stepperStruct->current  = frame.data_s8[6];
         stepperStruct->mode     = frame.data_s8[7];
     }
@@ -236,7 +236,7 @@ void loopCAN (uint8_t& a_current_score, ServoMessage* SERVO_1_msg, ServoMessage*
     }
     else if(frame.id == can_ids::DIGITAL_OUTPUTS)
     {
-        a_digital_io_output = frame.data_s8[0] << 8 | frame.data_s8[1];
+        a_digital_io_output = (frame.data_s8[0] << 8) | frame.data_s8[1];
         a_enables = frame.data_s8[2];
     }
     else if(frame.id >= can_ids::AX12_W1)
