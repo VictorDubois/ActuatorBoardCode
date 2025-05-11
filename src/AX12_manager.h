@@ -8,7 +8,7 @@
 #define DYNAMIXEL_SERIAL_RX_pin 18
 #define NB_AX12 4
 const uint8_t PIN_RTS = 21;
-const uint16_t DYNAMIXEL_BAUDRATE = 57600;
+const uint32_t DYNAMIXEL_BAUDRATE = 1000000;
 
 Dynamixel dxl(PIN_RTS);
 
@@ -18,7 +18,8 @@ struct AX12
     CAN::AX12Read infos;
     CAN::AX12Write commands;
 
-    AX12(int8_t a_id): id(a_id) {
+    AX12(int8_t a_id) : id(a_id)
+    {
         commands.torque_enable = 0;
         commands.currentLimit = 0;
         commands.max_accel = 0;
@@ -45,17 +46,15 @@ void setupDynamixel()
     DYNAMIXEL_SERIAL.begin(DYNAMIXEL_BAUDRATE, SERIAL_8N1, DYNAMIXEL_SERIAL_RX_pin, DYNAMIXEL_SERIAL_TX_pin);
     dxl.attach(DYNAMIXEL_SERIAL, DYNAMIXEL_BAUDRATE);
 
-    for (int i = 0; i< NB_AX12; i++)
+    for (int i = 0; i < NB_AX12; i++)
     {
         dxl.addModel<DxlModel::X>(myAX12s[i].id);
-
     }
 }
 
-
 void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
 {
-    //a_ax12_msg.mode == // by default, they are all in position mode
+    // a_ax12_msg.mode == // by default, they are all in position mode
 
     dxl.goalPosition(ax12_id, a_ax12_msg.position);
     dxl.torqueEnable(ax12_id, a_ax12_msg.torque_enable);
@@ -75,28 +74,27 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     {
         dxl.accelerationLimit(ax12_id, a_ax12_msg.max_accel);
     }
-    //dxl.velocityLimit(ax12_id, a_ax12_msg.max_speed);
-    //dxl.accelerationLimit(ax12_id, a_ax12_msg.max_accel);
-    //dxl.currentLimit(ax12_id, a_ax12_msg.currentLimit);
-    //dxl.temperatureLimit(ax12_id, a_ax12_msg.temperatureLimit);
+    // dxl.velocityLimit(ax12_id, a_ax12_msg.max_speed);
+    // dxl.accelerationLimit(ax12_id, a_ax12_msg.max_accel);
+    // dxl.currentLimit(ax12_id, a_ax12_msg.currentLimit);
+    // dxl.temperatureLimit(ax12_id, a_ax12_msg.temperatureLimit);
 }
 
-void updateDynamixelInfo(CAN::AX12Read& a_ax12_msg, uint8_t ax12_id)
+void updateDynamixelInfo(CAN::AX12Read &a_ax12_msg, uint8_t ax12_id)
 {
-    //a_ax12_msg.mode == // by default, they are all in position mode
+    // a_ax12_msg.mode == // by default, they are all in position mode
 
     a_ax12_msg.current_position = dxl.presentPosition(ax12_id);
     a_ax12_msg.presentCurrent = dxl.presentCurrent(ax12_id);
     a_ax12_msg.presentTemperature = dxl.presentTemperature(ax12_id);
     a_ax12_msg.hardwareErrorStatus = dxl.hardwareErrorStatus(ax12_id);
     a_ax12_msg.moving = dxl.movingStatus(ax12_id);
-    a_ax12_msg.mode = 1;//dxl.mode(ax12_id);
+    a_ax12_msg.mode = 1; // dxl.mode(ax12_id);
 }
-
 
 void updateDynamixels()
 {
-    for (int i = 0; i< NB_AX12; i++)
+    for (int i = 0; i < NB_AX12; i++)
     {
         updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
     }
@@ -104,7 +102,7 @@ void updateDynamixels()
 
 void updateDynamixelsInfo()
 {
-    for (int i = 0; i< NB_AX12; i++)
+    for (int i = 0; i < NB_AX12; i++)
     {
         updateDynamixelInfo(myAX12s[i].infos, myAX12s[i].id);
     }

@@ -1,9 +1,8 @@
 #pragma once
 
-#include <jm_PCF8574.h> // https://github.com/jmparatte/jm_PCF8574
-#define LCM2004A_I2C_ADR1	((uint8_t) 0x3F)		// default PCF8574A I2C address
-#define LCM2004A_I2C_ADR2	((uint8_t) 0x27)		// alternative PCF8574 I2C address
-
+#include <jm_PCF8574.h>                   // https://github.com/jmparatte/jm_PCF8574
+#define LCM2004A_I2C_ADR1 ((uint8_t)0x3F) // default PCF8574A I2C address
+#define LCM2004A_I2C_ADR2 ((uint8_t)0x27) // alternative PCF8574 I2C address
 
 struct IOPotentiallyExpended
 {
@@ -18,7 +17,7 @@ struct IOPotentiallyExpended
   {
     return io_exp.begin(LCM2004A_I2C_ADR1);
   }
-  
+
   int myDigitalRead(uint8_t pin)
   {
     if (pin >= 100)
