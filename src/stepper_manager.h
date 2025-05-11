@@ -129,8 +129,16 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     stepper.enableOutputs();
     stepper.setSpeed(stepperStruct.speed * steps_per_mm);
     stepper.move(stepperStruct.position * steps_per_mm);
+    auto homingTimeout = millis() + 15000;
+    Serial.println("Start homing stepper");
+
     while (digitalRead(END_STOP_PIN) == LOW)
     {
+      if (millis() > homingTimeout)
+      {
+        Serial.println("Failed to home stepper: timeout reached");
+        break;
+      }
       stepper.runSpeed();
     }
     stepper.setCurrentPosition(0);
