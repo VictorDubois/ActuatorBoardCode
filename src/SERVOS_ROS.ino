@@ -68,35 +68,6 @@ void setup()
   Wire.setTimeOut(300); // ms // Todo: test this on ESP32
 #endif
 
-  // if (!io_exp.begin(LCM2004A_I2C_ADR1)) io_exp.begin(LCM2004A_I2C_ADR2);
-  /*while(true)
-  {
-    bool io_init = io.begin(LCM2004A_I2C_ADR1);
-    if (io_init)
-    {
-      while(true)
-      {
-          Serial.println("io_init LCM2004A_I2C_ADR1 true");
-      }
-    }
-    else
-    {
-      Serial.println("io_init false");
-    }
-
-    io_init = io.begin(LCM2004A_I2C_ADR2);
-    if (io_init)
-    {
-    while(true)
-      {
-          Serial.println("io_init LCM2004A_I2C_ADR2 true");
-      }      }
-    else
-    {
-      Serial.println("io_init false");
-    }
-    delay(1000);
-  }*/
   // LCD_setup();
   setupOled();
 
@@ -110,7 +81,7 @@ void setup()
   myPersistentServos[servoIndex++] = new PersistentServo(42);
   // myPersistentServos[servoIndex++] = new PersistentServo(43);
 
-  delay(10);
+  delay(15);
   Serial.println("before setupAccelStep");
   setupAccelStep();
 
@@ -151,12 +122,10 @@ void setup()
   io.myPinMode(7, OUTPUT);
   io.myPinMode(1, INPUT);
 
-  // setupVL53L0X(&io);
-
   setupDynamixel();
 
   // Test dynamixel
-  while (true)
+  while (false)
   {
     dxl.led(1, true);
     Serial.println("AX12 LED on");
@@ -166,18 +135,17 @@ void setup()
     delay(1000);
   }
 
-  CAN::AX12Write l_ax12_msg;
-  l_ax12_msg.currentLimit = 255;
-  l_ax12_msg.max_accel = 255;
-  l_ax12_msg.max_speed = 255;
-  l_ax12_msg.temperatureLimit = 65;
-  l_ax12_msg.position = 100;
-  l_ax12_msg.torque_enable = 1;
-  // l_ax12_msg.
-
   // Test Dynamixel
-  while (true)
+  while (false)
   {
+    CAN::AX12Write l_ax12_msg;
+    l_ax12_msg.currentLimit = 255;
+    l_ax12_msg.max_accel = 255;
+    l_ax12_msg.max_speed = 255;
+    l_ax12_msg.temperatureLimit = 65;
+    l_ax12_msg.position = 100;
+    l_ax12_msg.torque_enable = 1;
+
     for (int i = 0; i < 10; i++)
     {
       // myAX12s[0].commands.position(300);
@@ -237,7 +205,7 @@ void setup() // PAMI
 
   myPersistentServos[0] = new PersistentServo(35);
 
-  bool io_init = io.begin();
+  bool io_init = io.begin(32);
   if (io_init)
   {
     Serial.println("io_init true");
