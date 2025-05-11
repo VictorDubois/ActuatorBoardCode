@@ -4,11 +4,14 @@
 #include <Wire.h>
 
 Adafruit_MPU6050 mpu;
-void setupMPU6050(void) {
+void setupMPU6050(void)
+{
   // Try to initialize!
-  if (!mpu.begin()) {
+  if (!mpu.begin())
+  {
     Serial.println("Failed to find MPU6050 chip");
-    while (1) {
+    while (1)
+    {
       delay(10);
     }
   }
@@ -17,7 +20,8 @@ void setupMPU6050(void) {
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 }
 
-void setupMPU6050Loud(void) {
+void setupMPU6050Loud(void)
+{
   Serial.begin(115200);
   while (!Serial)
     delay(10); // will pause Zero, Leonardo, etc until serial console opens
@@ -25,9 +29,11 @@ void setupMPU6050Loud(void) {
   Serial.println("Adafruit MPU6050 test!");
 
   // Try to initialize!
-  if (!mpu.begin()) {
+  if (!mpu.begin())
+  {
     Serial.println("Failed to find MPU6050 chip");
-    while (1) {
+    while (1)
+    {
       delay(10);
     }
   }
@@ -35,7 +41,8 @@ void setupMPU6050Loud(void) {
 
   mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
   Serial.print("Accelerometer range set to: ");
-  switch (mpu.getAccelerometerRange()) {
+  switch (mpu.getAccelerometerRange())
+  {
   case MPU6050_RANGE_2_G:
     Serial.println("+-2G");
     break;
@@ -51,7 +58,8 @@ void setupMPU6050Loud(void) {
   }
   mpu.setGyroRange(MPU6050_RANGE_250_DEG);
   Serial.print("Gyro range set to: ");
-  switch (mpu.getGyroRange()) {
+  switch (mpu.getGyroRange())
+  {
   case MPU6050_RANGE_250_DEG:
     Serial.println("+- 250 deg/s");
     break;
@@ -68,7 +76,8 @@ void setupMPU6050Loud(void) {
 
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
   Serial.print("Filter bandwidth set to: ");
-  switch (mpu.getFilterBandwidth()) {
+  switch (mpu.getFilterBandwidth())
+  {
   case MPU6050_BAND_260_HZ:
     Serial.println("260 Hz");
     break;
@@ -96,22 +105,22 @@ void setupMPU6050Loud(void) {
   delay(100);
 }
 
-bool isTiltedRight(sensors_event_t& accel)
+bool isTiltedRight(sensors_event_t &accel)
 {
-    return accel.acceleration.x > 0.5;
+  return accel.acceleration.x > 0.5;
 }
 
-bool isTiltedLeft(sensors_event_t& accel)
+bool isTiltedLeft(sensors_event_t &accel)
 {
-    return accel.acceleration.x < -0.5;
+  return accel.acceleration.x < -0.5;
 }
 
-bool isTiltedFront(sensors_event_t& accel)
+bool isTiltedFront(sensors_event_t &accel)
 {
-    return accel.acceleration.y > 0.5;
+  return accel.acceleration.y > 0.5;
 }
 
-void updateTiltedStatus(bool& tiltedRight, bool& tiltedLeft, bool& tiltedFront)
+void updateTiltedStatus(bool &tiltedRight, bool &tiltedLeft, bool &tiltedFront)
 {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
@@ -121,7 +130,7 @@ void updateTiltedStatus(bool& tiltedRight, bool& tiltedLeft, bool& tiltedFront)
 }
 
 void printMPU6050Value()
-{  /* Get new sensor events with the readings */
+{ /* Get new sensor events with the readings */
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
