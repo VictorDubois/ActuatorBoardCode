@@ -57,7 +57,7 @@ void setup()
 {
   Serial.begin(115200);
   Serial.setTimeout(100);
-  Serial.println("coucou!");
+  Serial.println("Start Actuator board");
 
   Wire.begin(I2C_SDA, I2C_SCL);
   Wire.setClock(100000);
@@ -230,7 +230,8 @@ void setup() // PAMI
   io.myPinMode(7, OUTPUT);
   io.myPinMode(1, INPUT);
 
-  setupVL53L0X(&io);
+  // setupVL53L0XDual(&io);
+  setupVL53L0XSingle();
 
   setupAccelStepPami();
 
@@ -267,7 +268,8 @@ void loop()
   bool tiltedRight = false;
   bool tiltedLeft = false;
   bool tiltedFront = false;
-  read_dual_sensors(&io, &measureFront, &measureRear);
+  // read_dual_sensors(&io, &measureFront, &measureRear);
+  read_single_sensor(&io, &measureFront);
   bool stop = obstaclePresent(&measureFront, 100);
   updateTiltedStatus(tiltedRight, tiltedLeft, tiltedFront);
 
