@@ -14,13 +14,14 @@
 #define SHT_LOX2 107
 
 // objects for the vl53l0x
+Adafruit_VL53L0X lox0 = Adafruit_VL53L0X();
 Adafruit_VL53L0X lox1 = Adafruit_VL53L0X();
-//Adafruit_VL53L0X lox2 = Adafruit_VL53L0X();
+Adafruit_VL53L0X lox2 = Adafruit_VL53L0X();
 
 // this holds the measurement
+VL53L0X_RangingMeasurementData_t measure0;
 VL53L0X_RangingMeasurementData_t measure1;
-//VL53L0X_RangingMeasurementData_t measure2;
-
+VL53L0X_RangingMeasurementData_t measure2;
 
 /*
     Reset all sensors by setting all of their XSHUT pins low for delay(10), then set all XSHUT high to bring out of reset
@@ -30,41 +31,44 @@ VL53L0X_RangingMeasurementData_t measure1;
     Keep sensor #1 awake, and now bring sensor #2 out of reset by setting its XSHUT pin high.
     Initialize sensor #2 with lox.begin(new_i2c_address) Pick any number but 0x29 and whatever you set the first sensor to
  */
-void setID(IOPotentiallyExpended* io) {
+void setID(IOPotentiallyExpended *io)
+{
   // all reset
-  io->myDigitalWrite(SHT_LOX1, LOW);    
-  //io->myDigitalWrite(SHT_LOX2, LOW);
+  io->myDigitalWrite(SHT_LOX1, LOW);
+  io->myDigitalWrite(SHT_LOX2, LOW);
   delay(10);
   // all unreset
   io->myDigitalWrite(SHT_LOX1, HIGH);
-  //io->myDigitalWrite(SHT_LOX2, HIGH);
+  io->myDigitalWrite(SHT_LOX2, HIGH);
   delay(10);
 
   // activating LOX1 and resetting LOX2
   io->myDigitalWrite(SHT_LOX1, HIGH);
-  //io->myDigitalWrite(SHT_LOX2, LOW);
+  io->myDigitalWrite(SHT_LOX2, LOW);
 
   // initing LOX1
-  if(!lox1.begin(LOX1_ADDRESS)) {
+  if (!lox1.begin(LOX1_ADDRESS))
+  {
     Serial.println(F("Failed to boot first VL53L0X"));
-    while(1);
+    // while (1)
+    //   ;
   }
   delay(10);
 
   // activating LOX2
-  //io->myDigitalWrite(SHT_LOX2, HIGH);
+  io->myDigitalWrite(SHT_LOX2, HIGH);
   delay(10);
 
-  //initing LOX2
-  #ifdef USE_SECOND_SENSOR
-  if(!lox2.begin(LOX2_ADDRESS)) {
+  // initing LOX2
+  if (!lox2.begin(LOX2_ADDRESS))
+  {
     Serial.println(F("Failed to boot second VL53L0X"));
-    while(1);
+    // while (1)
+    //   ;
   }
-  #endif
 }
 
-bool obstaclePresent(VL53L0X_RangingMeasurementData_t* mesure, uint16_t distanceMax_mm)
+bool obstaclePresent(VL53L0X_RangingMeasurementData_t *mesure, uint16_t distanceMax_mm)
 {
   if (mesure->RangeStatus != 4)
   {
@@ -77,55 +81,98 @@ bool obstaclePresent(VL53L0X_RangingMeasurementData_t* mesure, uint16_t distance
   return true;
 }
 
-bool read_dual_sensors(IOPotentiallyExpended* io, 
-VL53L0X_RangingMeasurementData_t* measureFront,
-VL53L0X_RangingMeasurementData_t* measureRear
-)
+void read_dual_sensors(IOPotentiallyExpended *io)
 {
-  return lox1.rangingTest(measureFront, false); /*&& // pass in 'true' to get debug data printout!
-  lox2.rangingTest(measureRear, false); // pass in 'true' to get debug data printout!*/
-}
 
-void read_dual_sensors(IOPotentiallyExpended* io) {
-  
   lox1.rangingTest(&measure1, false); // pass in 'true' to get debug data printout!
-  //lox2.rangingTest(&measure2, false); // pass in 'true' to get debug data printout!
+  lox2.rangingTest(&measure2, false); // pass in 'true' to get debug data printout!
 
   // print sensor one reading
   Serial.print(F("1: "));
-  if(measure1.RangeStatus != 4) {     // if not out of range
+  if (measure1.RangeStatus != 4)
+  { // if not out of range
     Serial.print(measure1.RangeMilliMeter);
-  } else {
+  }
+  else
+  {
     Serial.print(F("Out of range"));
   }
-  
+
   Serial.print(F(" "));
 
- /* // print sensor two reading
+  // print sensor two reading
   Serial.print(F("2: "));
-  if(measure2.RangeStatus != 4) {
+  if (measure2.RangeStatus != 4)
+  {
     Serial.print(measure2.RangeMilliMeter);
-  } else {
+  }
+  else
+  {
     Serial.print(F("Out of range"));
-  }*/
-  
+  }
+
   Serial.println();
 }
 
-void setupVL53L0X(IOPotentiallyExpended* io) {
+bool read_dual_sensors(IOPotentiallyExpended *io,
+                       VL53L0X_RangingMeasurementData_t *measureFront,
+                       VL53L0X_RangingMeasurementData_t *measureRear)
+{
+  return lox1.rangingTest(measureFront, false) && // pass in 'true' to get debug data printout!
+         lox2.rangingTest(measureRear, false);    // pass in 'true' to get debug data printout!
+}
+
+bool read_single_sensor(IOPotentiallyExpended *io,
+                        VL53L0X_RangingMeasurementData_t *measureFront)
+{
+  return lox0.rangingTest(measureFront, false); // pass in 'true' to get debug data printout!
+}
+
+void read_single_sensor(IOPotentiallyExpended *io)
+{
+
+  lox0.rangingTest(&measure0, false); // pass in 'true' to get debug data printout!
+
+  // print sensor one reading
+  Serial.print(F("1: "));
+  if (measure0.RangeStatus != 4)
+  { // if not out of range
+    Serial.print(measure0.RangeMilliMeter);
+  }
+  else
+  {
+    Serial.print(F("Out of range"));
+  }
+
+  Serial.print(F(" "));
+
+  Serial.println();
+}
+
+void setupVL53L0XSingle()
+{
+  if (!lox0.begin(LOX1_ADDRESS))
+  {
+    Serial.println(F("Failed to boot first VL53L0X"));
+    // while (1)
+    //   ;
+  }
+}
+
+void setupVL53L0XDual(IOPotentiallyExpended *io)
+{
   io->myPinMode(SHT_LOX1, OUTPUT);
-  //io->myPinMode(SHT_LOX2, OUTPUT);
+  io->myPinMode(SHT_LOX2, OUTPUT);
 
   Serial.println(F("Shutdown pins inited..."));
 
-  //Wire.begin(LOX_SDA, LOX_SCL);
+  // Wire.begin(LOX_SDA, LOX_SCL); // Already init
 
   io->myDigitalWrite(SHT_LOX1, LOW);
-  //io->myDigitalWrite(SHT_LOX2, LOW);
+  io->myDigitalWrite(SHT_LOX2, LOW);
 
   Serial.println(F("Both in reset mode...(pins are low)"));
-  
-  
+
   Serial.println(F("Starting..."));
   setID(io);
 }
