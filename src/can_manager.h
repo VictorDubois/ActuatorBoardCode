@@ -37,7 +37,7 @@ struct CanMessage
 static const uint32_t DESIRED_BIT_RATE = 500UL * 1000UL; // 500 kb/s
 bool pinged = false;
 
-void decodeAX12Read(CANMessage *frame, AX12Read a_ax12_read)
+void encodeAX12Read(CANMessage *frame, const AX12Read a_ax12_read)
 {
   frame->rtr = 0;
   frame->len = sizeof(AX12Read);
@@ -51,7 +51,7 @@ void decodeAX12Read(CANMessage *frame, AX12Read a_ax12_read)
   frame->data[7] = a_ax12_read.mode & 0xFF;
 }
 
-void decodeAX12Write(CANMessage *frame, AX12Write &a_ax12_write)
+void decodeAX12Write(const CANMessage *frame, AX12Write &a_ax12_write)
 {
   a_ax12_write.mode = frame->data_s8[0];
   a_ax12_write.position = (frame->data_s8[1] << 8) | frame->data_s8[2];
@@ -96,8 +96,8 @@ static uint32_t gSentFrameCount = 0;
 //   LOOP
 //----------------------------------------------------------------------------------------
 
-void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *SERVO_2_msg, Stepper *stepperStruct, StepperInfo *stepper_info, uint16_t bat_12V_voltage, uint8_t digital_io_read, uint16_t &a_digital_io_output, uint8_t &a_enables, int8_t a_remaining_time_s, int8_t a_is_blue,
-             AX12Write &ax12_w1, AX12Write &ax12_w2, AX12Write &ax12_w3, AX12Write &ax12_w4, AX12Write &ax12_w5, AX12Write &ax12_w6, AX12Read &ax12_r1, AX12Read &ax12_r2, AX12Read &ax12_r3, AX12Read &ax12_r4, AX12Read &ax12_r5, AX12Read &ax12_r6)
+void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *SERVO_2_msg, Stepper *stepperStruct, const StepperInfo *stepper_info, const uint16_t bat_12V_voltage, uint8_t digital_io_read, uint16_t &a_digital_io_output, uint8_t &a_enables, int8_t a_remaining_time_s, int8_t a_is_blue,
+             AX12Write &ax12_w1, AX12Write &ax12_w2, AX12Write &ax12_w3, AX12Write &ax12_w4, AX12Write &ax12_w5, AX12Write &ax12_w6, const AX12Read &ax12_r1, const AX12Read &ax12_r2, const AX12Read &ax12_r3, const AX12Read &ax12_r4, const AX12Read &ax12_r5, const AX12Read &ax12_r6)
 {
   // Serial.print("."); // debug
   pinged = true; // force sending a CAN message
@@ -171,27 +171,27 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     ACAN_ESP32::can.tryToSend(frame);
 
     frame.id = can_ids::AX12_R1;
-    decodeAX12Read(&frame, ax12_r1);
+    encodeAX12Read(&frame, ax12_r1);
     ACAN_ESP32::can.tryToSend(frame);
 
     frame.id = can_ids::AX12_R2;
-    decodeAX12Read(&frame, ax12_r2);
+    encodeAX12Read(&frame, ax12_r2);
     ACAN_ESP32::can.tryToSend(frame);
 
     frame.id = can_ids::AX12_R3;
-    decodeAX12Read(&frame, ax12_r3);
+    encodeAX12Read(&frame, ax12_r3);
     ACAN_ESP32::can.tryToSend(frame);
 
     frame.id = can_ids::AX12_R4;
-    decodeAX12Read(&frame, ax12_r4);
+    encodeAX12Read(&frame, ax12_r4);
     ACAN_ESP32::can.tryToSend(frame);
 
     /*frame.id = can_ids::AX12_R5;
-    decodeAX12Read(&frame, ax12_r5);
+    encodeAX12Read(&frame, ax12_r5);
     ACAN_ESP32::can.tryToSend (frame);
 
     frame.id = can_ids::AX12_R6;
-    decodeAX12Read(&frame, ax12_r6);
+    encodeAX12Read(&frame, ax12_r6);
     ACAN_ESP32::can.tryToSend (frame);*/
   }
 
