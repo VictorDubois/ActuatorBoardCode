@@ -46,9 +46,13 @@ void setupDynamixel()
     DYNAMIXEL_SERIAL.begin(DYNAMIXEL_BAUDRATE, SERIAL_8N1, DYNAMIXEL_SERIAL_RX_pin, DYNAMIXEL_SERIAL_TX_pin);
     dxl.attach(DYNAMIXEL_SERIAL, DYNAMIXEL_BAUDRATE);
 
+    delay(1000);
+
     for (int i = 0; i < NB_AX12; i++)
     {
-        dxl.addModel<DxlModel::X>(myAX12s[i].id);
+        Serial.println(i);
+        Serial.printf("Add Dynamixel n° %d with ID %d\n\r", i, myAX12s[i].id);
+        dxl.addModel<DxlModel::OTHER>(myAX12s[i].id);
     }
 }
 
