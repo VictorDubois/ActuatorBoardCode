@@ -31,6 +31,7 @@ constexpr uint8_t to_mA_accel = 50;
 StepperInfo stepper_info;
 int32_t last_set_current = 0;
 int32_t last_set_position = 0;
+auto homingTimeout = millis() + 15000;
 
 #include <AccelStepper.h>
 AccelStepper stepper = AccelStepper(stepper.DRIVER, STEP_PIN, DIR_PIN);
@@ -129,7 +130,7 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     stepper.enableOutputs();
     stepper.setSpeed(stepperStruct.speed * steps_per_mm);
     stepper.move(stepperStruct.position * steps_per_mm);
-    auto homingTimeout = millis() + 15000;
+    homingTimeout = millis() + 15000;
     Serial.println("Start homing stepper");
 
     while (digitalRead(END_STOP_PIN) == LOW)
