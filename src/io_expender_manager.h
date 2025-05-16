@@ -1,8 +1,7 @@
 #pragma once
 
-#include <jm_PCF8574.h>                   // https://github.com/jmparatte/jm_PCF8574
-#define LCM2004A_I2C_ADR1 ((uint8_t)0x3F) // default PCF8574A I2C address
-#define LCM2004A_I2C_ADR2 ((uint8_t)0x27) // alternative PCF8574 I2C address
+#include <jm_PCF8574.h> // https://github.com/jmparatte/jm_PCF8574
+#define IO_EXP_I2C_ADDRESS 32
 
 struct IOPotentiallyExpended
 {
@@ -10,12 +9,23 @@ struct IOPotentiallyExpended
 
   bool begin(uint8_t addr)
   {
-    return io_exp.begin(addr);
+
+    bool result = io_exp.begin(addr);
+    if (result)
+    {
+      Serial.println("IO exp init SUCCESS!");
+    }
+    else
+    {
+      Serial.println("IO exp init failed");
+    }
+
+    return result;
   }
 
   bool begin()
   {
-    return io_exp.begin(LCM2004A_I2C_ADR1);
+    return io_exp.begin(IO_EXP_I2C_ADDRESS);
   }
 
   int myDigitalRead(uint8_t pin)
