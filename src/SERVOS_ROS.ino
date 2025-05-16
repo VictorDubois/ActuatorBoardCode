@@ -5,7 +5,6 @@
 // #define PAMI 1
 
 #include <Wire.h>
-// #include <VarSpeedServo.h> // https://github.com/netlabtoolkit/VarSpeedServo
 #include "CanStruct/can_structs.h"
 using namespace CAN;
 
@@ -18,25 +17,24 @@ using namespace CAN;
 #ifdef PAMI
 #include "diff_drive_steppers.h"
 #include "MPU6050.h"
+#include "VL53L0X.h"
 #endif
 
 #include "oled_manager.h"
 #include "servos_manager.h"
-#include "LCD_manager.h"
 #include "RGBStrip_manager.h"
 #include "pressure_sensor_manager.h"
-#include "VL53L0X.h"
 #include "io_expender_manager.h"
 
 uint8_t current_score;
 
 PersistentServo *myPersistentServos[NB_SERVOS];
 IOPotentiallyExpended io;
-VL53L0X_RangingMeasurementData_t measureFront;
-VL53L0X_RangingMeasurementData_t measureRear;
-unsigned long endOfMatch;
+
+uint32_t endOfMatch;
 int8_t teamIsBlue = -1;
 int8_t remaining_time_s = 127;
+uint32_t timestamp_start_match = 0;
 
 #define STEPPER_POWER_ENABLE_PIN 5
 #define SERVO_POWER_ENABLE_PIN 44
@@ -47,18 +45,19 @@ int8_t remaining_time_s = 127;
 #define BAT_12V_PIN 1
 #define TIRETTE_PAMI_PIN 100
 #define TEAM_COLOR_PAMI_PIN 101
+#define CAN_DETECT_0 100
+#define CAN_DETECT_1 101
+#define CAN_DETECT_2 102
+#define CAN_DETECT_3 103
+
+#define I2C_EXTRA_1 106
+#define I2C_EXTRA_2 107
 
 #define I2C_SDA 13
 #define I2C_SCL 14
 
-#ifndef PAMI // Actuator board
-
-void setup()
+void initI2C()
 {
-  Serial.begin(115200);
-  Serial.setTimeout(100);
-  Serial.println("Start Actuator board");
-
   Wire.begin(I2C_SDA, I2C_SCL);
   Wire.setClock(100000);
 
@@ -67,8 +66,54 @@ void setup()
 #else
   Wire.setTimeOut(300); // ms // Todo: test this on ESP32
 #endif
+}
 
-  // LCD_setup();
+#ifndef PAMI // Actuator board
+void setup()
+{
+  // For the PCB with the broken DCDC
+  // pinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
+  // digitalWrite(SERVO_POWER_ENABLE_PIN, LOW);
+  Serial.begin(115200);
+  Serial.setTimeout(100);
+  Serial.println("Start Actuator board");
+
+  initI2C();
+
+  io.begin();
+
+  // IO expender
+  io.myPinMode(CAN_DETECT_0, INPUT);
+  io.myPinMode(CAN_DETECT_1, INPUT);
+  io.myPinMode(CAN_DETECT_2, INPUT);
+  io.myPinMode(CAN_DETECT_3, INPUT);
+  io.myPinMode(TRANSISTOR_1_PIN, OUTPUT);
+  io.myPinMode(TRANSISTOR_3_PIN, OUTPUT);
+  io.myPinMode(I2C_EXTRA_1, OUTPUT);
+  io.myPinMode(I2C_EXTRA_2, OUTPUT);
+
+  // Regular IO
+  io.myPinMode(STEPPER_POWER_ENABLE_PIN, OUTPUT);
+  io.myPinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
+  io.myPinMode(TRANSISTOR_2_PIN, OUTPUT);
+  io.myPinMode(TRANSISTOR_4_PIN, OUTPUT);
+  io.myPinMode(BAT_12V_PIN, INPUT);
+
+  setupDynamixel();
+
+  // Test dynamixel
+  while (false)
+  {
+    dxl.ledOn(2);
+    Serial.println("AX12 LED on");
+    delay(1000);
+    Serial.println("1000ms");
+
+    dxl.ledOff(1);
+    Serial.println("AX12 LED off");
+    delay(1000);
+  }
+
   setupOled();
 
   int servoIndex = 0;
@@ -79,13 +124,51 @@ void setup()
   myPersistentServos[servoIndex++] = new PersistentServo(40);
   myPersistentServos[servoIndex++] = new PersistentServo(41);
   myPersistentServos[servoIndex++] = new PersistentServo(42);
-  // myPersistentServos[servoIndex++] = new PersistentServo(43);
+  // myPersistentServos[servoIndex++] = new PersistentServo(43); // Clicou instead
 
+  // test servos
+  if (false)
+  {
+    digitalWrite(SERVO_POWER_ENABLE_PIN, LOW);
+    myPersistentServos[0]->speed = 128;
+    myPersistentServos[1]->speed = 128;
+    myPersistentServos[2]->speed = 128;
+    myPersistentServos[3]->speed = 128;
+    myPersistentServos[4]->speed = 128;
+    myPersistentServos[5]->speed = 128;
+    myPersistentServos[6]->speed = 128;
+    myPersistentServos[7]->speed = 128;
+
+    while (true)
+    {
+      myPersistentServos[0]->angle = 128;
+      myPersistentServos[1]->angle = 128;
+      myPersistentServos[2]->angle = 128;
+      myPersistentServos[3]->angle = 128;
+      myPersistentServos[4]->angle = 128;
+      myPersistentServos[5]->angle = 128;
+      myPersistentServos[6]->angle = 128;
+      myPersistentServos[7]->angle = 128;
+
+      updateServos(myPersistentServos);
+      delay(1000);
+
+      myPersistentServos[0]->angle = 128;
+      myPersistentServos[1]->angle = 128;
+      myPersistentServos[2]->angle = 128;
+      myPersistentServos[3]->angle = 128;
+      myPersistentServos[4]->angle = 128;
+      myPersistentServos[5]->angle = 128;
+      myPersistentServos[6]->angle = 128;
+      myPersistentServos[7]->angle = 128;
+
+      updateServos(myPersistentServos);
+      delay(1000);
+    }
+  }
   delay(15);
-  Serial.println("before setupAccelStep");
+  Serial.println("Init AccelStep");
   setupAccelStep();
-
-  Serial.println("after setupAccelStep");
 
   // digitalWrite(SUCTION_CUP_PIN, HIGH);
   // digitalWrite(VALVE_PIN, HIGH);
@@ -93,47 +176,10 @@ void setup()
   current_score = 0;
 
   strip.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
-
   turnlightsoff();
+
   setupCAN();
-
   Serial.println("Setup CAN done");
-  if (io.begin(32))
-  {
-    Serial.println("IO exp init SUCCESS!");
-  }
-  else
-  {
-    Serial.println("IO exp init failed");
-  }
-
-  io.myPinMode(100, INPUT);
-  io.myPinMode(101, INPUT);
-  io.myPinMode(102, INPUT);
-  io.myPinMode(103, INPUT);
-  io.myPinMode(104, OUTPUT);
-  io.myPinMode(105, OUTPUT);
-  io.myPinMode(106, OUTPUT);
-  io.myPinMode(107, OUTPUT);
-
-  io.myPinMode(5, OUTPUT);
-  io.myPinMode(44, OUTPUT);
-  io.myPinMode(9, OUTPUT);
-  io.myPinMode(7, OUTPUT);
-  io.myPinMode(1, INPUT);
-
-  setupDynamixel();
-
-  // Test dynamixel
-  while (false)
-  {
-    dxl.led(1, true);
-    Serial.println("AX12 LED on");
-    delay(1000);
-    dxl.led(1, false);
-    Serial.println("AX12 LED off");
-    delay(1000);
-  }
 
   // Test Dynamixel
   while (false)
@@ -189,46 +235,33 @@ void setup()
 #else
 void setup() // PAMI
 {
+  // For the PCB with the broken DCDC
+  // pinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
+  // digitalWrite(SERVO_POWER_ENABLE_PIN, LOW);
   Serial.begin(115200);
   Serial.setTimeout(100);
-
   Serial.println("PAMI setup");
 
-  Wire.begin(I2C_SDA, I2C_SCL);
-  Wire.setClock(100000);
+  initI2C();
 
-#ifdef __AVR__
-  Wire.setWireTimeout(300 /* us */, true /* reset_on_timeout */);
-#else
-  Wire.setTimeOut(3); // ms
-#endif
+  io.begin();
+
+  io.myPinMode(TIRETTE_PAMI_PIN, INPUT);
+  io.myPinMode(TEAM_COLOR_PAMI_PIN, INPUT);
+  io.myPinMode(CAN_DETECT_2, INPUT);
+  io.myPinMode(CAN_DETECT_3, INPUT);
+  io.myPinMode(TRANSISTOR_1_PIN, OUTPUT);
+  io.myPinMode(TRANSISTOR_3_PIN, OUTPUT);
+  io.myPinMode(I2C_EXTRA_1, OUTPUT);
+  io.myPinMode(I2C_EXTRA_2, OUTPUT);
+
+  io.myPinMode(STEPPER_POWER_ENABLE_PIN, OUTPUT);
+  io.myPinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
+  io.myPinMode(TRANSISTOR_2_PIN, OUTPUT);
+  io.myPinMode(TRANSISTOR_4_PIN, OUTPUT);
+  io.myPinMode(BAT_12V_PIN, INPUT);
 
   myPersistentServos[0] = new PersistentServo(35);
-
-  bool io_init = io.begin(32);
-  if (io_init)
-  {
-    Serial.println("io_init true");
-  }
-  else
-  {
-    Serial.println("io_init false");
-  }
-
-  io.myPinMode(100, INPUT);
-  io.myPinMode(101, INPUT);
-  io.myPinMode(102, INPUT);
-  io.myPinMode(103, INPUT);
-  io.myPinMode(104, OUTPUT);
-  io.myPinMode(105, OUTPUT);
-  io.myPinMode(106, OUTPUT);
-  io.myPinMode(107, OUTPUT);
-
-  io.myPinMode(5, OUTPUT);
-  io.myPinMode(44, OUTPUT);
-  io.myPinMode(9, OUTPUT);
-  io.myPinMode(7, OUTPUT);
-  io.myPinMode(1, INPUT);
 
   // setupVL53L0XDual(&io);
   setupVL53L0XSingle();
@@ -237,15 +270,28 @@ void setup() // PAMI
 
   setupMPU6050();
 
+  setupOled();
+
   // Wait Tirette
   while (io.myDigitalRead(TIRETTE_PAMI_PIN))
   {
     delay(10);
   }
+  timestamp_start_match = millis();
+  uint32_t timeout_start_PAMI = timestamp_start_match + 85000;
+  endOfMatch = timestamp_start_match + 100000;
+
   teamIsBlue = io.myDigitalRead(TEAM_COLOR_PAMI_PIN);
+
   showTeamColor(teamIsBlue);
 
-  delay(85000); // wait for PAMI-time to come
+  // wait for PAMI-time to come
+  while (timeout_start_PAMI > millis())
+  {
+    loopOled((millis() - timestamp_start_match) / 1000, teamIsBlue);
+    delay(10);
+  }
+
   endOfMatch = millis() + 15000;
   Serial.println("PAMI GO !");
 }
@@ -265,6 +311,8 @@ void funnyAction()
 
 void loop()
 {
+  VL53L0X_RangingMeasurementData_t measureFront;
+  VL53L0X_RangingMeasurementData_t measureRear;
   bool tiltedRight = false;
   bool tiltedLeft = false;
   bool tiltedFront = false;
@@ -273,7 +321,7 @@ void loop()
   bool stop = obstaclePresent(&measureFront, 100);
   updateTiltedStatus(tiltedRight, tiltedLeft, tiltedFront);
 
-  loopOled(remaining_time_s, teamIsBlue);
+  loopOled((millis() - timestamp_start_match) / 1000, teamIsBlue);
 
   if (millis() > endOfMatch)
   {
