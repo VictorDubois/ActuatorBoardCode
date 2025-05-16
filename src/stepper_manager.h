@@ -133,7 +133,7 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     homingTimeout = millis() + 15000;
     Serial.println("Start homing stepper");
 
-    while (digitalRead(END_STOP_PIN) == LOW)
+    while (digitalRead(END_STOP_PIN) == HIGH)
     {
       if (millis() > homingTimeout)
       {
