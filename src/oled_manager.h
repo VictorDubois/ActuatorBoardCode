@@ -29,9 +29,9 @@
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 // The pins for I2C are defined by the Wire-library.
-// On an arduino UNO:       A4(SDA), A5(SCL)
+// On an arduino UNO: A4(SDA), A5(SCL)
 // On an arduino MEGA 2560: 20(SDA), 21(SCL)
-// On an arduino LEONARDO:   2(SDA),  3(SCL), ...
+// On an arduino LEONARDO: 2(SDA), 3(SCL), ...
 #define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -58,7 +58,7 @@ static const unsigned char PROGMEM logo_bmp[] =
      0b01110000, 0b01110000,
      0b00000000, 0b00110000};
 
-void setupOled()
+void setupOled(bool isPami = false, bool isSuperStar = true)
 {
   // Serial.begin(9600);
   // Wire.begin(I2C_SDA, I2C_SCL);
@@ -82,10 +82,24 @@ void setupOled()
   display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(WHITE, BLACK);
   display.setCursor(0, 0); // Start at top-left corner
-  display.println("score: ");
+  display.println("Score: ");
   display.setTextSize(1);
   display.setCursor(0, 16); // Start at top-left corner
-  display.print("Krabi Robotique");
+  if (isPami)
+  {
+    if (isSuperStar)
+    {
+      display.print("Superstar !");
+    }
+    else
+    {
+      display.print("Supporter");
+    }
+  }
+  else
+  {
+    display.print("Krabi Robotique");
+  }
   display.setCursor(0, 16); // Start at top-left corner
   display.print("Team:");
   display.setCursor(0, 70); // Start at top-left corner
@@ -106,31 +120,31 @@ void setupOled()
   // drawing operations and then update the screen all at once by calling
   // display.display(). These examples demonstrate both approaches...
 
-  testdrawline();      // Draw many lines
+  testdrawline(); // Draw many lines
 
-  testdrawrect();      // Draw rectangles (outlines)
+  testdrawrect(); // Draw rectangles (outlines)
 
-  testfillrect();      // Draw rectangles (filled)
+  testfillrect(); // Draw rectangles (filled)
 
-  testdrawcircle();    // Draw circles (outlines)
+  testdrawcircle(); // Draw circles (outlines)
 
-  testfillcircle();    // Draw circles (filled)
+  testfillcircle(); // Draw circles (filled)
 
   testdrawroundrect(); // Draw rounded rectangles (outlines)
 
   testfillroundrect(); // Draw rounded rectangles (filled)
 
-  testdrawtriangle();  // Draw triangles (outlines)
+  testdrawtriangle(); // Draw triangles (outlines)
 
-  testfilltriangle();  // Draw triangles (filled)
+  testfilltriangle(); // Draw triangles (filled)
 
-  testdrawchar();      // Draw characters of the default font
+  testdrawchar(); // Draw characters of the default font
 
-  testdrawstyles();    // Draw 'stylized' characters
+  testdrawstyles(); // Draw 'stylized' characters
 
-  testscrolltext();    // Draw scrolling text
+  testscrolltext(); // Draw scrolling text
 
-  testdrawbitmap();    // Draw a small bitmap image
+  testdrawbitmap(); // Draw a small bitmap image
 
   // Invert and restore display, pausing in-between
   display.invertDisplay(true);
@@ -151,7 +165,7 @@ void loopOled(int8_t remaining_time, int8_t isBlue)
   display.setCursor(50, 24);
   if (isBlue == 1)
   {
-    display.print("Blue  ");
+    display.print("Blue ");
   }
   else if (isBlue == 0)
   {
@@ -166,17 +180,17 @@ void loopOled(int8_t remaining_time, int8_t isBlue)
 void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue)
 {
   // int32_t begin = millis();
-
+  display.setTextSize(2);
   display.setCursor(70, 0);
   display.print(score);
-  display.print("  ");
+  display.print(" ");
   display.setCursor(80, 24);
   display.setTextSize(1);
   display.print(remaining_time);
   display.setCursor(50, 24);
   if (isBlue == 1)
   {
-    display.print("Blue  ");
+    display.print("Blue ");
   }
   else if (isBlue == 0)
   {
@@ -204,9 +218,9 @@ void loopOledSlow(uint8_t score)
 
   display.print("score: ");
 
-  // display.setCursor(70,0);             // Start at top-left corner
+  // display.setCursor(70,0); // Start at top-left corner
   display.print(score);
-  // display.print("  ");
+  // display.print(" ");
   display.display();
 
   // int32_t end = millis();
@@ -214,6 +228,20 @@ void loopOledSlow(uint8_t score)
   // Serial.println(end-begin);
 }
 
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////////////// EXEMPLES ////////////////
+//////////////// EXEMPLES ////////////////
+//////////////// EXEMPLES ////////////////
+//////////////// EXEMPLES ////////////////
+//////////////// EXEMPLES ////////////////
+//////////////// EXEMPLES ////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
 void testdrawline()
 {
   int16_t i;
