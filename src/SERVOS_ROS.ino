@@ -2,7 +2,8 @@
  * Author : Victor Dubois
  ****************************************************************************/
 
-// #define PAMI 1
+#define PAMI 1
+#define SUPERSTAR 1
 
 #include <Wire.h>
 #include "CanStruct/can_structs.h"
@@ -42,7 +43,10 @@ uint32_t timestamp_start_match = 0;
 #define TRANSISTOR_2_PIN 9
 #define TRANSISTOR_3_PIN 105
 #define TRANSISTOR_4_PIN 7
-#define BAT_12V_PIN 1
+#define BAT_POWER_PIN 1
+#define PRESSURE_1_PIN 4
+#define PRESSURE_2_PIN 2
+#define BAT_ELEC_PIN PRESSURE_1_PIN
 #define TIRETTE_PAMI_PIN 100
 #define TEAM_COLOR_PAMI_PIN 101
 #define CAN_DETECT_0 100
@@ -52,6 +56,17 @@ uint32_t timestamp_start_match = 0;
 
 #define I2C_EXTRA_1 106
 #define I2C_EXTRA_2 107
+
+#define SERVO_1 35
+#define SERVO_2 36
+#define SERVO_3 37
+#define SERVO_4 39
+#define SERVO_5 40
+#define SERVO_6 41
+#define SERVO_7 42
+#define SERVO_8 43
+
+#define CLICOU_HOMING 43
 
 #define I2C_SDA 13
 #define I2C_SCL 14
@@ -97,7 +112,10 @@ void setup()
   io.myPinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
   io.myPinMode(TRANSISTOR_2_PIN, OUTPUT);
   io.myPinMode(TRANSISTOR_4_PIN, OUTPUT);
-  io.myPinMode(BAT_12V_PIN, INPUT);
+  io.myPinMode(BAT_POWER_PIN, INPUT);
+  io.myPinMode(BAT_ELEC_PIN, INPUT);
+  io.myPinMode(PRESSURE_1_PIN, INPUT);
+  io.myPinMode(PRESSURE_2_PIN, INPUT);
 
   setupDynamixel();
 
@@ -117,14 +135,14 @@ void setup()
   setupOled();
 
   int servoIndex = 0;
-  myPersistentServos[servoIndex++] = new PersistentServo(35);
-  myPersistentServos[servoIndex++] = new PersistentServo(36);
-  myPersistentServos[servoIndex++] = new PersistentServo(37);
-  myPersistentServos[servoIndex++] = new PersistentServo(39);
-  myPersistentServos[servoIndex++] = new PersistentServo(40);
-  myPersistentServos[servoIndex++] = new PersistentServo(41);
-  myPersistentServos[servoIndex++] = new PersistentServo(42);
-  // myPersistentServos[servoIndex++] = new PersistentServo(43); // Clicou instead
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7);
+  // myPersistentServos[servoIndex++] = new PersistentServo(SERVO_8); // Clicou instead
 
   // test servos
   if (false)
@@ -259,9 +277,9 @@ void setup() // PAMI
   io.myPinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
   io.myPinMode(TRANSISTOR_2_PIN, OUTPUT);
   io.myPinMode(TRANSISTOR_4_PIN, OUTPUT);
-  io.myPinMode(BAT_12V_PIN, INPUT);
+  io.myPinMode(BAT_POWER_PIN, INPUT);
 
-  myPersistentServos[0] = new PersistentServo(35);
+  myPersistentServos[0] = new PersistentServo(SERVO_1);
 
   // setupVL53L0XDual(&io);
   setupVL53L0XSingle();
@@ -270,7 +288,7 @@ void setup() // PAMI
 
   setupMPU6050();
 
-  setupOled();
+  setupOled(true, SUPERSTAR);
 
   // Wait Tirette
   while (io.myDigitalRead(TIRETTE_PAMI_PIN))
@@ -288,7 +306,8 @@ void setup() // PAMI
   // wait for PAMI-time to come
   while (timeout_start_PAMI > millis())
   {
-    loopOled((millis() - timestamp_start_match) / 1000, teamIsBlue);
+    float bat_12V_voltage = analogRead(BAT_POWER_PIN) * 6.23 * 3300 / 4096; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+    loopOled((millis() - timestamp_start_match) / 1000, teamIsBlue, bat_12V_voltage);
     delay(10);
   }
 
@@ -321,7 +340,9 @@ void loop()
   bool stop = obstaclePresent(&measureFront, 100);
   updateTiltedStatus(tiltedRight, tiltedLeft, tiltedFront);
 
-  loopOled((millis() - timestamp_start_match) / 1000, teamIsBlue);
+  float bat_12V_voltage = analogRead(BAT_POWER_PIN) * 6.23 * 3300 / 4096; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+
+  loopOled((millis() - timestamp_start_match) / 1000, teamIsBlue, bat_12V_voltage);
 
   if (millis() > endOfMatch)
   {
@@ -345,23 +366,23 @@ void loop()
   Stepper stepperStruct;
   StepperInfo stepper_info;
 
-  uint16_t bat_12V_voltage;
   uint8_t digital_io_read;
   uint16_t digital_io_output;
   uint8_t enables;
 
   for (int i = 0; i < 10; i++)
   {
-    // drawLCD(current_score);
-    // current_score = (millis()/100)%256;
-    loopOled(current_score, remaining_time_s, teamIsBlue);
-    showTeamColor(teamIsBlue);
-
     updateDynamixels();
     updateDynamixelsInfo();
 
     // read_dual_sensors(&io, &measureFront, &measureRear);
-    bat_12V_voltage = analogRead(BAT_12V_PIN) * 5.2 * 3300 / 4096;
+    float bat_power_voltage = analogRead(BAT_POWER_PIN) * 6.23 * 3300.0f / 4096.0f; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+    float bat_elec_voltage = analogRead(BAT_ELEC_PIN) * 6.23 * 3300.0f / 4096.0f;   // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+
+    // drawLCD(current_score);
+    // current_score = (millis()/100)%256;
+    loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
+    showTeamColor(teamIsBlue);
 
     // Digital inputs
     digital_io_read = 0;
@@ -382,7 +403,7 @@ void loop()
     for (int j = 0; j < 1; j++) // run loopCAN more often than slow I2C calls
     {
       // Serial.println("loopCan");
-      loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_12V_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue,
+      loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_power_voltage, bat_elec_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue,
               myAX12s[0].commands, myAX12s[1].commands, myAX12s[2].commands, myAX12s[3].commands, myAX12s[4].commands, myAX12s[5].commands,
               myAX12s[0].infos, myAX12s[1].infos, myAX12s[2].infos, myAX12s[3].infos, myAX12s[4].infos, myAX12s[5].infos);
 

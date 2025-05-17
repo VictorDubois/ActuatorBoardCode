@@ -58,6 +58,11 @@ static const unsigned char PROGMEM logo_bmp[] =
      0b01110000, 0b01110000,
      0b00000000, 0b00110000};
 
+uint8_t batt_to_str(float a_batt)
+{
+  return (uint8_t)(a_batt * 10);
+}
+
 void setupOled(bool isPami = false, bool isSuperStar = true)
 {
   // Serial.begin(9600);
@@ -84,7 +89,7 @@ void setupOled(bool isPami = false, bool isSuperStar = true)
   display.setCursor(0, 0); // Start at top-left corner
   display.println("Score: ");
   display.setTextSize(1);
-  display.setCursor(0, 16); // Start at top-left corner
+  display.setCursor(0, 16); // Start at left, third line
   if (isPami)
   {
     if (isSuperStar)
@@ -98,13 +103,10 @@ void setupOled(bool isPami = false, bool isSuperStar = true)
   }
   else
   {
-    display.print("Krabi Robotique");
+    display.print("Krabi");
   }
-  display.setCursor(0, 16); // Start at top-left corner
+  display.setCursor(0, 24); // Start at left, fourth line
   display.print("Team:");
-  display.setCursor(0, 70); // Start at top-left corner
-
-  display.setTextSize(2); // Draw 2X-scale text
 
   display.display();
 
@@ -156,11 +158,10 @@ void setupOled(bool isPami = false, bool isSuperStar = true)
   */
 }
 
-void loopOled(int8_t remaining_time, int8_t isBlue)
+void loopOled(int8_t remaining_time, int8_t isBlue, float batt_V)
 {
-
-  display.setCursor(80, 24);
   display.setTextSize(1);
+  display.setCursor(80, 24);
   display.print(remaining_time);
   display.setCursor(50, 24);
   if (isBlue == 1)
@@ -175,13 +176,21 @@ void loopOled(int8_t remaining_time, int8_t isBlue)
   {
     display.print("??????");
   }
+  display.setCursor(80, 16);
+  display.print(batt_to_str(batt_V));
 }
 
-void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue)
+void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue, float batt_elec_V, float batt_power_V)
 {
+  //  Score:
+  //  Score:
+  //
+  //
+  //
   // int32_t begin = millis();
-  display.setTextSize(2);
-  display.setCursor(70, 0);
+
+  display.setTextSize(2);   // Draw 2X-scale text
+  display.setCursor(70, 0); // In position to print score
   display.print(score);
   display.print(" ");
   display.setCursor(80, 24);
@@ -190,7 +199,7 @@ void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue)
   display.setCursor(50, 24);
   if (isBlue == 1)
   {
-    display.print("Blue ");
+    display.print("Blue  ");
   }
   else if (isBlue == 0)
   {
@@ -200,6 +209,12 @@ void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue)
   {
     display.print("??????");
   }
+
+  display.setCursor(50, 16);
+  display.print(batt_to_str(batt_elec_V));
+
+  display.setCursor(80, 16);
+  display.print(batt_to_str(batt_power_V));
 
   display.display();
 
