@@ -26,7 +26,7 @@
 
 TMC2208Stepper driver = TMC2208Stepper(&Serial2, R_SENSE);
 
-constexpr uint32_t steps_per_mm = 80;
+constexpr uint32_t steps_per_mm = 41  ;
 constexpr uint8_t to_mA_accel = 50;
 StepperInfo stepper_info;
 int32_t last_set_current = 0;
@@ -129,12 +129,15 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     last_set_position = 0;
     stepper.enableOutputs();
     stepper.setSpeed(stepperStruct.speed * steps_per_mm);
-    stepper.move(stepperStruct.position * steps_per_mm);
+    stepper.move(-1000 * steps_per_mm);
     homingTimeout = millis() + 15000;
     Serial.println("Start homing stepper");
 
     while (digitalRead(END_STOP_PIN) == HIGH)
     {
+
+      Serial.println("END_STOP_PIN");
+      Serial.println(digitalRead(END_STOP_PIN));
       if (millis() > homingTimeout)
       {
         Serial.println("Failed to home stepper: timeout reached");
