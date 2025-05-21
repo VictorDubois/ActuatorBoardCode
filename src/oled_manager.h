@@ -60,7 +60,7 @@ static const unsigned char PROGMEM logo_bmp[] =
 
 uint8_t batt_to_str(float a_batt)
 {
-  return (uint8_t)(a_batt * 10);
+  return (uint8_t)(a_batt / 100);
 }
 
 void setupOled(bool isPami = false, bool isSuperStar = true)
@@ -107,6 +107,21 @@ void setupOled(bool isPami = false, bool isSuperStar = true)
   }
   display.setCursor(0, 24); // Start at left, fourth line
   display.print("Team:");
+
+  display.setCursor(110, 24); // Start at right, fourth line
+  display.print("sec");
+
+  display.setCursor(40, 16); // Start at right, third line
+  display.print("E");
+
+  display.setCursor(65, 16); // Start at right, third line
+  display.print("dV");
+
+  display.setCursor(85, 16); // Start at right, third line
+  display.print("P");
+
+  display.setCursor(110, 16); // Start at right, third line
+  display.print("dV");
 
   display.display();
 
@@ -193,7 +208,7 @@ void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue, float batt_el
   display.setCursor(70, 0); // In position to print score
   display.print(score);
   display.print(" ");
-  display.setCursor(80, 24);
+  display.setCursor(90, 24);
   display.setTextSize(1);
   display.print(remaining_time);
   display.setCursor(50, 24);
@@ -210,10 +225,10 @@ void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue, float batt_el
     display.print("??????");
   }
 
-  display.setCursor(50, 16);
+  display.setCursor(45, 16);
   display.print(batt_to_str(batt_elec_V));
 
-  display.setCursor(80, 16);
+  display.setCursor(90, 16);
   display.print(batt_to_str(batt_power_V));
 
   display.display();
