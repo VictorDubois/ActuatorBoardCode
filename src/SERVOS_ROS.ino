@@ -2,7 +2,7 @@
  * Author : Victor Dubois
  ****************************************************************************/
 
-#define PAMI 1
+// #define PAMI 1
 #define SUPERSTAR 1
 
 #include <Wire.h>
@@ -13,6 +13,10 @@ using namespace CAN;
 #include "can_manager.h"
 #include "stepper_manager.h"
 #include "AX12_manager.h"
+
+ServoMessage SERVO_1_msg;
+ServoMessage SERVO_2_msg;
+Stepper stepperStruct;
 #endif
 
 #ifdef PAMI
@@ -66,7 +70,7 @@ uint32_t timestamp_start_match = 0;
 #define SERVO_7 42
 #define SERVO_8 43
 
-#define CLICOU_HOMING 43
+#define CLICOU_HOMING_PIN END_STOP_PIN // 43
 
 #define I2C_SDA 13
 #define I2C_SCL 14
@@ -87,15 +91,48 @@ void initI2C()
 void setup()
 {
   // For the PCB with the broken DCDC
-  // pinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
-  // digitalWrite(SERVO_POWER_ENABLE_PIN, LOW);
+  pinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
+  digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
   Serial.begin(115200);
-  Serial.setTimeout(100);
+
+  while (!Serial)
+  {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+  delay(1000);
+
+  // Serial.setTimeout(100);
   Serial.println("Start Actuator board");
+  Serial.flush();
+
+  // Test dynamixel
+  if (false)
+  {
+    setupDynamixel();
+    dxl.torqueOn(1);
+
+    while (true)
+    {
+      dxl.ledOn(1);
+      Serial.println("AX12 LED on");
+      Serial.flush();
+      dxl.setGoalPosition(1, 400);
+
+      delay(1000);
+
+      dxl.ledOff(1);
+      dxl.setGoalPosition(1, 800);
+
+      Serial.println("AX12 LED off");
+      Serial.flush();
+      delay(1000);
+    }
+  }
 
   initI2C();
 
   io.begin();
+  Serial.flush();
 
   // IO expender
   io.myPinMode(CAN_DETECT_0, INPUT);
@@ -117,22 +154,28 @@ void setup()
   io.myPinMode(PRESSURE_1_PIN, INPUT);
   io.myPinMode(PRESSURE_2_PIN, INPUT);
 
-  setupDynamixel();
-
-  // Test dynamixel
-  while (false)
-  {
-    dxl.ledOn(2);
-    Serial.println("AX12 LED on");
-    delay(1000);
-    Serial.println("1000ms");
-
-    dxl.ledOff(1);
-    Serial.println("AX12 LED off");
-    delay(1000);
-  }
+  Serial.println("io pinmode done");
 
   setupOled();
+
+  if (false)
+  {
+    setupDynamixel();
+
+    // Test dynamixel
+    while (true)
+    {
+      dxl.ledOn(1);
+      Serial.println("AX12 LED on");
+      Serial.flush();
+      delay(1000);
+
+      dxl.ledOff(1);
+      Serial.println("AX12 LED off");
+      Serial.flush();
+      delay(1000);
+    }
+  }
 
   int servoIndex = 0;
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1);
@@ -143,11 +186,20 @@ void setup()
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7);
   // myPersistentServos[servoIndex++] = new PersistentServo(SERVO_8); // Clicou instead
+  // digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
+
+  // Default positions
+  SERVO_1_msg.angle_s1 = 144; // 144 = relache tout à droite
+  SERVO_1_msg.angle_s2 = 132; // 132 = relache milieu droite
+  SERVO_1_msg.angle_s3 = 144; // 144 = relache milieu gauche
+  SERVO_1_msg.angle_s4 = 150; // 150 = relache tout à gauche
+  SERVO_2_msg.angle_s1 = 175; // 175 = doigt en bas
 
   // test servos
   if (false)
   {
-    digitalWrite(SERVO_POWER_ENABLE_PIN, LOW);
+    digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
+
     myPersistentServos[0]->speed = 128;
     myPersistentServos[1]->speed = 128;
     myPersistentServos[2]->speed = 128;
@@ -155,30 +207,38 @@ void setup()
     myPersistentServos[4]->speed = 128;
     myPersistentServos[5]->speed = 128;
     myPersistentServos[6]->speed = 128;
-    myPersistentServos[7]->speed = 128;
+    // myPersistentServos[7]->speed = 128;
 
     while (true)
     {
-      myPersistentServos[0]->angle = 128;
-      myPersistentServos[1]->angle = 128;
-      myPersistentServos[2]->angle = 128;
-      myPersistentServos[3]->angle = 128;
-      myPersistentServos[4]->angle = 128;
-      myPersistentServos[5]->angle = 128;
-      myPersistentServos[6]->angle = 128;
-      myPersistentServos[7]->angle = 128;
+      Serial.println("128");
+      myPersistentServos[0]->angle = 144; // 144 = relache tout à droite
+      myPersistentServos[1]->angle = 132; // 132 = relache milieu droite
+      myPersistentServos[2]->angle = 144; // 144 = relache milieu gauche
+      myPersistentServos[3]->angle = 150; // 150 = relache tout à gauche
+      myPersistentServos[4]->angle = 175; // 175 = doigt en bas
+      myPersistentServos[5]->angle = 175;
+      myPersistentServos[6]->angle = 175;
+      // myPersistentServos[7]->angle = 128;
 
       updateServos(myPersistentServos);
       delay(1000);
 
-      myPersistentServos[0]->angle = 128;
-      myPersistentServos[1]->angle = 128;
-      myPersistentServos[2]->angle = 128;
-      myPersistentServos[3]->angle = 128;
-      myPersistentServos[4]->angle = 128;
-      myPersistentServos[5]->angle = 128;
-      myPersistentServos[6]->angle = 128;
-      myPersistentServos[7]->angle = 128;
+      Serial.println("70");
+      myPersistentServos[0]->angle = 67;  // 67 = attrape tout à droite
+      myPersistentServos[1]->angle = 52;  // 52 = attrape milieu droite
+      myPersistentServos[2]->angle = 67;  // 67 = attrape milieu gauche
+      myPersistentServos[3]->angle = 62;  // 62 = attrape tout à gauche
+      myPersistentServos[4]->angle = 115; // 110 doigt à l'horizontale
+      myPersistentServos[5]->angle = 112;
+      myPersistentServos[6]->angle = 110;
+      // myPersistentServos[7]->angle = 128;
+
+      // full droite 125 attrape 208 relache (testeur)
+      // milieu droite 107 attrape 198 relache (testeur)
+      // milieu gauche 125 attrape 210 relache (testeur)
+      // full gauche 115 attrape 205 relache (testeur)
+      // doigt bas 230 haut 168 (testeur)
 
       updateServos(myPersistentServos);
       delay(1000);
@@ -198,40 +258,102 @@ void setup()
 
   setupCAN();
   Serial.println("Setup CAN done");
+  Serial.flush();
+
+  setupDynamixel();
 
   // Test Dynamixel
-  while (false)
+  if (false)
   {
-    CAN::AX12Write l_ax12_msg;
-    l_ax12_msg.currentLimit = 255;
-    l_ax12_msg.max_accel = 255;
-    l_ax12_msg.max_speed = 255;
-    l_ax12_msg.temperatureLimit = 65;
-    l_ax12_msg.position = 100;
-    l_ax12_msg.torque_enable = 1;
-
-    for (int i = 0; i < 10; i++)
+    // dxl.torqueOn(1);
+    while (true)
     {
-      // myAX12s[0].commands.position(300);
-      l_ax12_msg.position = 300 + 50 * i;
+      CAN::AX12Write l_ax12_msg;
+      l_ax12_msg.currentLimit = 100;
+      l_ax12_msg.max_accel = 100;
+      l_ax12_msg.max_speed = 100;
+      l_ax12_msg.temperatureLimit = 65;
+      l_ax12_msg.position = 100;
+      l_ax12_msg.torque_enable = 1;
 
-      updateDynamixel(l_ax12_msg, 1);
-      Serial.println(l_ax12_msg.position);
-      delay(1000);
+      for (int i = 0; i < 10; i++)
+      {
+        // myAX12s[0].commands.position(300);
+        l_ax12_msg.torque_enable = 1;
+        l_ax12_msg.position = 300 + 50 * i;
+        l_ax12_msg.currentLimit = 250;
+        l_ax12_msg.max_accel = 250;
+        l_ax12_msg.max_speed = 250;
+        if (i % 2)
+        {
+          dxl.ledOn(1);
+        }
+        else
+        {
+          dxl.ledOff(1);
+        }
+        // dxl.setGoalPosition(1, l_ax12_msg.position);
+
+        updateDynamixel(l_ax12_msg, 1);
+        Serial.println(l_ax12_msg.position);
+        Serial.flush();
+
+        delay(1000);
+      }
     }
   }
 
   Serial.println("end of Setup");
+  Serial.flush();
+
+  // Test IOs
+  while (false)
+  {
+    int digital_io_read = 0;
+    for (int pin_id = 0; pin_id < 4; pin_id++)
+    {
+      digital_io_read |= io.myDigitalRead(100 + pin_id) << pin_id;
+
+      Serial.print(io.myDigitalRead(100 + pin_id));
+    }
+    Serial.println();
+    Serial.println(digital_io_read);
+    Serial.println(io.myDigitalRead(END_STOP_PIN));
+  }
 
   // Homing
   Stepper stepperStructHoming;
   stepperStructHoming.current = 200; //*50mA
-  stepperStructHoming.accel = 200;   // mm/s2
-  stepperStructHoming.speed = 100;   // mm/s
+  stepperStructHoming.accel = 20;    // mm/s2
+  stepperStructHoming.speed = 10;    // mm/s
   stepperStructHoming.position = 0;  // mm
   stepperStructHoming.mode = stepper_mode::HOMING;
   // stepperStructHoming.mode = stepper_mode::POSITION;
   loopStepper(stepperStructHoming);
+
+  // Do not move
+  stepperStruct.mode = stepper_mode::POSITION;
+  stepperStruct.position = 0;
+
+  // Test pumps
+  while (false)
+  {
+    io.myDigitalWrite(TRANSISTOR_1_PIN, HIGH);
+    io.myDigitalWrite(TRANSISTOR_2_PIN, HIGH);
+    io.myDigitalWrite(TRANSISTOR_3_PIN, HIGH);
+    io.myDigitalWrite(TRANSISTOR_4_PIN, HIGH);
+    Serial.println("HIGH");
+
+    delay(1000);
+
+    io.myDigitalWrite(TRANSISTOR_1_PIN, LOW);
+    io.myDigitalWrite(TRANSISTOR_2_PIN, LOW);
+    io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
+    io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
+    Serial.println("LOW");
+
+    delay(2000);
+  }
 
   // Test stepper
   if (false)
@@ -240,14 +362,46 @@ void setup()
 
     while (true)
     {
-      stepperStructHoming.position = 0; // mm
+      stepperStructHoming.position = 2; // mm 235 mm
 
-      if ((millis() / 1000) % 2)
+      if ((millis() / 5000) % 2)
       {
-        stepperStructHoming.position = 100; // mm
+        stepperStructHoming.position = 10; // mm 252.5 mm
+        Serial.println(100);
+      }
+      else
+      {
+        Serial.println(0);
       }
       loopStepper(stepperStructHoming);
     }
+  }
+
+  // Test Oled
+  while (false)
+  {
+    uint16_t bat_power_voltage_int = analogRead(BAT_POWER_PIN);
+    uint16_t bat_elec_voltage_int = analogRead(BAT_ELEC_PIN);
+    float bat_power_voltage = bat_power_voltage_int * 6.935283019 * 3300.0f / 4096.0f; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+    float bat_elec_voltage = bat_elec_voltage_int * 7.3514 * 3300.0f / 4096.0f;        // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+
+    Serial.print("Power: ");
+    Serial.print(bat_power_voltage_int);
+    Serial.print(", ");
+    Serial.println(bat_power_voltage);
+    Serial.print(", ");
+    Serial.println(batt_to_str(bat_power_voltage));
+
+    Serial.print("Elec: ");
+    Serial.print(bat_elec_voltage_int);
+    Serial.print(", ");
+    Serial.println(bat_elec_voltage);
+    Serial.print(", ");
+    Serial.println(batt_to_str(bat_elec_voltage));
+
+    // drawLCD(current_score);
+    // current_score = (millis()/100)%256;
+    loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
   }
 }
 #else
@@ -358,29 +512,23 @@ void loop()
   }
 }
 #else // not PAMI
+
+uint8_t digital_io_read;
+uint16_t digital_io_output;
+uint8_t enables;
+
 void loop()
 {
   double pressure = 0; // readPressure();
-  ServoMessage SERVO_1_msg;
-  ServoMessage SERVO_2_msg;
-  Stepper stepperStruct;
-  StepperInfo stepper_info;
-
-  uint8_t digital_io_read;
-  uint16_t digital_io_output;
-  uint8_t enables;
 
   for (int i = 0; i < 10; i++)
   {
     updateDynamixels();
     updateDynamixelsInfo();
 
-    // read_dual_sensors(&io, &measureFront, &measureRear);
-    float bat_power_voltage = analogRead(BAT_POWER_PIN) * 6.23 * 3300.0f / 4096.0f; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
-    float bat_elec_voltage = analogRead(BAT_ELEC_PIN) * 6.23 * 3300.0f / 4096.0f;   // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+    float bat_power_voltage = analogRead(BAT_POWER_PIN) * 6.935283019 * 3300.0f / 4096.0f; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+    float bat_elec_voltage = analogRead(BAT_ELEC_PIN) * 7.3514 * 3300.0f / 4096.0f;        // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
 
-    // drawLCD(current_score);
-    // current_score = (millis()/100)%256;
     loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
     showTeamColor(teamIsBlue);
 
