@@ -25,7 +25,7 @@ struct IOPotentiallyExpended
 
   bool begin()
   {
-    return io_exp.begin(IO_EXP_I2C_ADDRESS);
+    return begin(IO_EXP_I2C_ADDRESS);
   }
 
   int myDigitalRead(uint8_t pin)
