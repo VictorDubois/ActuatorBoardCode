@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Arduino.h"
 // #include <Dynamixel.h> //https://github.com/hideakitai/Dynamixel => does not seem to work
 #include <Dynamixel2Arduino.h>
 #include "ESP32SerialPortHandler.cpp"
@@ -10,14 +10,13 @@
 #define DYNAMIXEL_SERIAL_TX_pin 17
 #define DYNAMIXEL_SERIAL_RX_pin 18
 #define NB_AX12 4
+#define AX12_A_MODEL_ID 12
 const uint8_t PIN_RTS = 21;
-// const uint32_t DYNAMIXEL_BAUDRATE = 1000000;
-const uint32_t DYNAMIXEL_BAUDRATE = 57600;
+const uint32_t DYNAMIXEL_BAUDRATE = 1000000;
+// const uint32_t DYNAMIXEL_BAUDRATE = 57600;
 
 Dynamixel2Arduino dxl;
 ESP32SerialPortHandler esp_dxl_port(DYNAMIXEL_SERIAL, DYNAMIXEL_SERIAL_RX_pin, DYNAMIXEL_SERIAL_TX_pin, PIN_RTS);
-
-// Dynamixel dxl(PIN_RTS);
 
 struct AX12
 {
@@ -51,12 +50,27 @@ void setupDynamixel()
     pinMode(DYNAMIXEL_SERIAL_TX_pin, OUTPUT);
     pinMode(DYNAMIXEL_SERIAL_RX_pin, INPUT);
     pinMode(PIN_RTS, OUTPUT);
-
     digitalWrite(PIN_RTS, HIGH);
 
     dxl.setPort(esp_dxl_port);
     dxl.setPortProtocolVersion(1);
     dxl.begin(DYNAMIXEL_BAUDRATE);
+
+    for (int i = 0; i < NB_AX12; i++)
+    {
+        dxl.setModelNumber(i, AX12_A_MODEL_ID);
+        auto id = myAX12s[i].id;
+        if (dxl.ping())
+        {
+            Serial.print("Found dynamixel ");
+            Serial.println(id);
+        }
+        else
+        {
+            Serial.print("Missing dynamixel ");
+            Serial.println(id);
+        }
+    }
 }
 
 void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
