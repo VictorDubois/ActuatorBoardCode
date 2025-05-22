@@ -9,7 +9,7 @@
 #define DYNAMIXEL_SERIAL Serial2 // change as you want
 #define DYNAMIXEL_SERIAL_TX_pin 17
 #define DYNAMIXEL_SERIAL_RX_pin 18
-#define NB_AX12 4
+#define NB_AX12 3
 #define AX12_A_MODEL_ID 12
 const uint8_t PIN_RTS = 21;
 const uint32_t DYNAMIXEL_BAUDRATE = 1000000;
@@ -43,7 +43,7 @@ struct AX12
     }
 };
 
-AX12 myAX12s[NB_AX12 + 2] = {AX12(1), AX12(2), AX12(3), AX12(4), AX12(5), AX12(6)};
+AX12 myAX12s[NB_AX12 + 3] = {AX12(1), AX12(2), AX12(3), AX12(4), AX12(5), AX12(6)};
 
 void setupDynamixel()
 {

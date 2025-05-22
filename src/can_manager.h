@@ -115,7 +115,7 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
       Serial.print(" ");
       Serial.print("Receive: ");
       Serial.print(gReceivedFrameCount);
-      Serial.print(" ");
+      Serial.println(" ");
       /*Serial.print (" STATUS 0x") ;
       Serial.print (TWAI_STATUS_REG, HEX) ;
       Serial.print (" RXERR ") ;
@@ -143,10 +143,10 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     {
       frame.data[i] = 0;
     }
-    uint16_t batt_mv = bat_power_voltage * 1000;
+    uint16_t batt_mv = bat_power_voltage;
     frame.data[1] = batt_mv & 0xFF;
     frame.data[0] = batt_mv >> 8;
-    batt_mv = bat_elec_voltage * 1000;
+    batt_mv = bat_elec_voltage;
     frame.data[3] = batt_mv & 0xFF;
     frame.data[2] = batt_mv >> 8;
     ACAN_ESP32::can.tryToSend(frame);
@@ -185,9 +185,9 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     encodeAX12Read(&frame, ax12_r3);
     ACAN_ESP32::can.tryToSend(frame);
 
-    frame.id = can_ids::AX12_R4;
+    /*frame.id = can_ids::AX12_R4;
     encodeAX12Read(&frame, ax12_r4);
-    ACAN_ESP32::can.tryToSend(frame);
+    ACAN_ESP32::can.tryToSend(frame);*/
 
     /*frame.id = can_ids::AX12_R5;
     encodeAX12Read(&frame, ax12_r5);

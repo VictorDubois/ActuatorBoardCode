@@ -520,17 +520,15 @@ uint8_t enables;
 void loop()
 {
   double pressure = 0; // readPressure();
-
+  float bat_power_voltage = 0;
+  float bat_elec_voltage = 0;
   for (int i = 0; i < 10; i++)
   {
     updateDynamixels();
-    updateDynamixelsInfo();
+    // updateDynamixelsInfo();
 
-    float bat_power_voltage = analogRead(BAT_POWER_PIN) * 6.935283019 * 3300.0f / 4096.0f; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
-    float bat_elec_voltage = analogRead(BAT_ELEC_PIN) * 7.3514 * 3300.0f / 4096.0f;        // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
-
-    loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
-    showTeamColor(teamIsBlue);
+    bat_power_voltage = analogRead(BAT_POWER_PIN) * 6.935283019 * 3300.0f / 4096.0f; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
+    bat_elec_voltage = analogRead(BAT_ELEC_PIN) * 7.3514 * 3300.0f / 4096.0f;        // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
 
     // Digital inputs
     digital_io_read = 0;
@@ -548,7 +546,7 @@ void loop()
     io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
     // io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, enables & (0x1 << 1));
 
-    for (int j = 0; j < 1; j++) // run loopCAN more often than slow I2C calls
+    for (int j = 0; j < 10; j++) // run loopCAN more often than slow I2C calls
     {
       // Serial.println("loopCan");
       loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_power_voltage, bat_elec_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue,
@@ -584,6 +582,8 @@ void loop()
     }
     // delay(5);
   }
+  loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
+  showTeamColor(teamIsBlue);
   // Serial.println(stepper_info.distance_to_go);
   // Serial.println(myPersistentServos[0]->angle);
   // Serial.println(current_score);
