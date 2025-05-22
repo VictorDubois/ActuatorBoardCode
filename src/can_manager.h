@@ -107,7 +107,7 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     gBlinkLedDate += 100;
     // digitalWrite (LED_BUILTIN, !digitalRead (LED_BUILTIN)) ;
 
-    bool l_print_debug = true;
+    bool l_print_debug = false;
     if (l_print_debug)
     {
       Serial.print("Sent: ");
