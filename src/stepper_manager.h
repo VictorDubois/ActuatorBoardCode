@@ -26,7 +26,7 @@
 
 TMC2208Stepper driver = TMC2208Stepper(&Serial2, R_SENSE);
 
-constexpr uint32_t steps_per_mm = 41  ;
+constexpr uint32_t steps_per_mm = 41;
 constexpr uint8_t to_mA_accel = 50;
 StepperInfo stepper_info;
 int32_t last_set_current = 0;
@@ -80,7 +80,7 @@ StepperInfo loopStepper(Stepper &stepperStruct)
   case stepper_mode::POSITION:
     stepper.enableOutputs();
 
-    if (stepper.acceleration() != stepperStruct.accel * steps_per_mm)
+    /*if (stepper.acceleration() != stepperStruct.accel * steps_per_mm)
     {
       Serial.println("Set accel to :");
       Serial.println(stepperStruct.accel * steps_per_mm);
@@ -89,7 +89,7 @@ StepperInfo loopStepper(Stepper &stepperStruct)
       // Check, to avoid calling unecessarily
       stepper.setAcceleration(stepperStruct.accel * steps_per_mm);
       Serial.println(stepper.acceleration());
-    }
+    }*/
 
     if (stepper.maxSpeed() != stepperStruct.speed * steps_per_mm)
     {
