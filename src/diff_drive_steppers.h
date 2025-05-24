@@ -44,8 +44,19 @@ enum trajectoryStep
 TMC2208Stepper driver_left = TMC2208Stepper(&Serial1, R_SENSE);
 TMC2208Stepper driver_right = TMC2208Stepper(&Serial2, R_SENSE);
 
-constexpr uint32_t steps_per_mm_pami = 20;
-constexpr uint32_t diff_steps_per_deg_pami = 80;
+#define ENTRAXE_MM 90.f
+#define WHEEL_RADIUS_MM 30.0f
+#define MICROSTEP_FACTOR 1 // 4?
+#define STEPS_PER_REVOLUTION (360 / (1.8f * MICROSTEP_FACTOR))
+
+#define DIST_MM_PER_REVOLUTION (WHEEL_RADIUS_MM * M_PI) // Distance traveled for a fulli wheel revolution (in mm)
+#define STEPS_PER_MM_THEORY (STEPS_PER_REVOLUTION / DIST_MM_PER_REVOLUTION)
+#define STEPS_PER_MM (STEPS_PER_MM_THEORY * 1.0f)
+#define STEPS_PER_DEG_THEORY ((ENTRAXE_MM * STEPS_PER_REVOLUTION) / (DIST_MM_PER_REVOLUTION * 360.0f)) // Nb of step it takes to rotate 1 deg (old value: 4.7)
+#define STEPS_PER_DEG (STEPS_PER_DEG_THEORY * 1.0f)
+
+constexpr float steps_per_mm_pami = STEPS_PER_MM;
+constexpr float diff_steps_per_deg_pami = STEPS_PER_DEG;
 constexpr uint8_t to_mA_accel_pami = 50;
 int32_t last_set_current_pami = 0;
 int32_t last_set_position_pami = 0;
@@ -205,13 +216,13 @@ void loopStepperPami(bool stop, bool penche_gauche, bool penche_droite, bool pen
       targetUpdatedTo = trajectoryStep::TURN;
       if (teamIsBlue)
       {
-        targetLeft -= 200 * steps_per_mm_pami;
-        targetRight += 200 * steps_per_mm_pami;
+        targetLeft -= 90.0f * diff_steps_per_deg_pami;
+        targetRight += 90.0f * diff_steps_per_deg_pami;
       }
       else
       {
-        targetLeft += 200 * steps_per_mm_pami;
-        targetRight -= 200 * steps_per_mm_pami;
+        targetLeft += 90.0f * diff_steps_per_deg_pami;
+        targetRight -= 90.0f * diff_steps_per_deg_pami;
       }
     }
 
