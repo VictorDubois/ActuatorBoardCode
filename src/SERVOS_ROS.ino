@@ -95,11 +95,11 @@ void setup()
   digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
   Serial.begin(115200);
 
-  while (!Serial)
+  /*while (!Serial)
   {
     ; // wait for serial port to connect. Needed for native USB port only
-  }
-  delay(1000);
+  }*/
+  // delay(1000);
 
   // Serial.setTimeout(100);
   Serial.println("Start Actuator board");
