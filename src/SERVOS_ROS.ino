@@ -154,6 +154,11 @@ void setup()
   io.myPinMode(PRESSURE_1_PIN, INPUT);
   io.myPinMode(PRESSURE_2_PIN, INPUT);
 
+  io.myDigitalWrite(TRANSISTOR_1_PIN, LOW);
+  io.myDigitalWrite(TRANSISTOR_2_PIN, LOW);
+  io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
+  io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
+
   Serial.println("io pinmode done");
 
   setupOled();
@@ -500,7 +505,7 @@ void loop()
 #else // not PAMI
 
 uint8_t digital_io_read;
-uint16_t digital_io_output;
+uint16_t digital_io_output = 0;
 uint8_t enables;
 
 void loop()
