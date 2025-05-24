@@ -178,35 +178,21 @@ void setup()
   }
 
   int servoIndex = 0;
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, 144, 100, 0.8, 67, 144);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, 132, 100, 0.8, 52, 132);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, 144, 100, 0.8, 67, 144);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, 150, 100, 0.8, 62, 150);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5, 175, 100, 0.8, 115, 175);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6, 100, 100, 0.8, 112, 175);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7, 100, 100, 0.8, 110, 175);
   // myPersistentServos[servoIndex++] = new PersistentServo(SERVO_8); // Clicou instead
   // digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
-
-  // Default positions
-  SERVO_1_msg.angle_s1 = 144; // 144 = relache tout à droite
-  SERVO_1_msg.angle_s2 = 132; // 132 = relache milieu droite
-  SERVO_1_msg.angle_s3 = 144; // 144 = relache milieu gauche
-  SERVO_1_msg.angle_s4 = 150; // 150 = relache tout à gauche
-  SERVO_2_msg.angle_s1 = 175; // 175 = doigt en bas
 
   // test servos
   if (false)
   {
     digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
 
-    myPersistentServos[0]->speed = 128;
-    myPersistentServos[1]->speed = 128;
-    myPersistentServos[2]->speed = 128;
-    myPersistentServos[3]->speed = 128;
-    myPersistentServos[4]->speed = 128;
-    myPersistentServos[5]->speed = 128;
-    myPersistentServos[6]->speed = 128;
     // myPersistentServos[7]->speed = 128;
 
     while (true)

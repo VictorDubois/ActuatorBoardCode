@@ -7,17 +7,20 @@ struct PersistentServo
 {
 
     PersistentServo() = default;
-    PersistentServo(uint16_t pin, int16_t angle, int16_t speed, double easing_constant) 
-    : pin(pin), angle(angle), speed(speed), easing_constant(easing_constant)
+    PersistentServo(uint16_t pin, int16_t angle, int16_t speed, double easing_constant, int16_t min_angle, int16_t max_angle)
+        : pin(pin), angle(angle), speed(speed), easing_constant(easing_constant), min_angle(min_angle), max_angle(max_angle)
     {
         pinMode(pin, OUTPUT);
         servo_lib_handler.attach(pin);
     }
-    PersistentServo(uint16_t pin): PersistentServo(pin, 100, 100, 0.8) {}
+    PersistentServo(uint16_t pin, int16_t angle, int16_t speed, double easing_constant) : PersistentServo(pin, angle, speed, easing_constant, 0, 65000) {}
+    PersistentServo(uint16_t pin) : PersistentServo(pin, 100, 100, 0.8) {}
 
     uint16_t pin;
     int16_t angle;
     int16_t speed;
+    int16_t min_angle;
+    int16_t max_angle;
 
     // When easing constant (ke) < 1.0, return value is normalized, when 1.0, returns pulse width (μs)
     // ke = 0.0 is linear, between 0.0 and 1.0 is tunable sigmoid, 1.0 is normal response
@@ -26,12 +29,13 @@ struct PersistentServo
 
     void update()
     {
-        servo_lib_handler.write(pin, angle, speed, easing_constant);
+        int16_t l_angle = max(angle, min_angle);
+        l_angle = min(l_angle, max_angle);
+        servo_lib_handler.write(pin, l_angle, speed, easing_constant);
     }
 };
 
-
-void updateServos(PersistentServo** myPersistentServos)
+void updateServos(PersistentServo **myPersistentServos)
 {
     for (int i = 0; i < NB_SERVOS; i++)
     {
