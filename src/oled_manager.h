@@ -94,7 +94,7 @@ void setupOled(bool isPami = false, bool isSuperStar = true)
   {
     if (isSuperStar)
     {
-      display.print("Superstar !");
+      display.print("Superstar");
     }
     else
     {
@@ -104,18 +104,17 @@ void setupOled(bool isPami = false, bool isSuperStar = true)
   else
   {
     display.print("Krabi");
+    display.setCursor(40, 16); // Start at right, third line
+    display.print("E");
+
+    display.setCursor(65, 16); // Start at right, third line
+    display.print("dV");
   }
   display.setCursor(0, 24); // Start at left, fourth line
   display.print("Team:");
 
   display.setCursor(110, 24); // Start at right, fourth line
   display.print("sec");
-
-  display.setCursor(40, 16); // Start at right, third line
-  display.print("E");
-
-  display.setCursor(65, 16); // Start at right, third line
-  display.print("dV");
 
   display.setCursor(85, 16); // Start at right, third line
   display.print("P");
