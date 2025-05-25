@@ -47,7 +47,7 @@ TMC2208Stepper driver_right = TMC2208Stepper(&Serial2, R_SENSE);
 #define ENTRAXE_MM 90.f
 #define WHEEL_RADIUS_MM 30.0f
 #define MICROSTEP_FACTOR 1 // 4?
-#define STEPS_PER_REVOLUTION (360 / (1.8f * MICROSTEP_FACTOR))
+#define STEPS_PER_REVOLUTION (360 * MICROSTEP_FACTOR / 1.8f)
 
 #define DIST_MM_PER_REVOLUTION (WHEEL_RADIUS_MM * M_PI) // Distance traveled for a fulli wheel revolution (in mm)
 #define STEPS_PER_MM_THEORY (STEPS_PER_REVOLUTION / DIST_MM_PER_REVOLUTION)
