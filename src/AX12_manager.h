@@ -77,6 +77,16 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
 {
     // a_ax12_msg.mode == // by default, they are all in position mode
 
+    if (a_ax12_msg.currentLimit > 100)
+    {
+        a_ax12_msg.currentLimit = 100;
+    }
+
+    if (a_ax12_msg.max_speed > 100)
+    {
+        a_ax12_msg.max_speed = 100;
+    }
+
     dxl.setGoalPosition(ax12_id, a_ax12_msg.position);
     if (a_ax12_msg.torque_enable)
     {
@@ -88,11 +98,11 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     }
     if (a_ax12_msg.currentLimit != -1)
     {
-        dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit * 4);
+        dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
     }
     if (a_ax12_msg.max_speed != -1)
     {
-        dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed);
+        dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed, UNIT_PERCENT);
     }
     if (a_ax12_msg.temperatureLimit != -1)
     {
