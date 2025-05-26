@@ -84,10 +84,7 @@ void setupOled(bool isPami = false, bool isSuperStar = true)
   // Clear the buffer
   display.clearDisplay();
 
-  display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(WHITE, BLACK);
-  display.setCursor(0, 0); // Start at top-left corner
-  display.println("Score: ");
   display.setTextSize(1);
   display.setCursor(0, 16); // Start at left, third line
   if (isPami)
@@ -104,6 +101,12 @@ void setupOled(bool isPami = false, bool isSuperStar = true)
   else
   {
     display.print("Krabi");
+
+    display.setTextSize(2);  // Draw 2X-scale text
+    display.setCursor(0, 0); // Start at top-left corner
+    display.println("Score: ");
+    display.setTextSize(1);
+
     display.setCursor(40, 16); // Start at right, third line
     display.print("E");
 
@@ -194,7 +197,7 @@ void loopOled(int8_t remaining_time, int8_t isBlue, float batt_V)
   display.print(batt_to_str(batt_V));
 }
 
-void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue, float batt_elec_V, float batt_power_V)
+void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue, float batt_elec_mV, float batt_power_mV)
 {
   //  Score:
   //  Score:
@@ -223,12 +226,23 @@ void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue, float batt_el
   {
     display.print("??????");
   }
-
+  uint8_t l_batt_elec_dV = batt_to_str(batt_elec_mV);
+  if (l_batt_elec_dV < 100)
+  {
+    display.setCursor(45, 16);
+    display.print("   ");
+  }
   display.setCursor(45, 16);
-  display.print(batt_to_str(batt_elec_V));
+  display.print(l_batt_elec_dV);
 
+  uint8_t l_batt_power_dV = batt_to_str(batt_power_mV);
+  if (l_batt_power_dV < 100)
+  {
+    display.setCursor(45, 16);
+    display.print("   ");
+  }
   display.setCursor(90, 16);
-  display.print(batt_to_str(batt_power_V));
+  display.print(l_batt_power_dV);
 
   display.display();
 
