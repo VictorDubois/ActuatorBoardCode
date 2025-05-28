@@ -238,7 +238,7 @@ void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue, float batt_el
   uint8_t l_batt_power_dV = batt_to_str(batt_power_mV);
   if (l_batt_power_dV < 100)
   {
-    display.setCursor(45, 16);
+    display.setCursor(90, 16);
     display.print("   ");
   }
   display.setCursor(90, 16);
