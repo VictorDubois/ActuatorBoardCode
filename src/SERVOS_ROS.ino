@@ -604,13 +604,14 @@ void loop()
     }
     // delay(5);
   }
+
   loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
   timings[l_time++] = millis();
 
   showTeamColor(teamIsBlue);
   timings[l_time++] = millis();
 
-  Serial.println("### Timings: ###");
+  /*Serial.println("### Timings: ###");
 
   for (int i_time_print = 1; i_time_print < l_time; i_time_print++)
   {
@@ -619,7 +620,7 @@ void loop()
     Serial.print(timings[i_time_print] - timings[i_time_print - 1]);
     Serial.print(", ");
   }
-  Serial.println("-------");
+  Serial.println("-------");*/
 
   // Serial.println(stepper_info.distance_to_go);
   // Serial.println(myPersistentServos[0]->angle);
