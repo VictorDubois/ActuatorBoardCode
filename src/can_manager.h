@@ -172,6 +172,8 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     frame.data[0] = digital_io_read;
     ACAN_ESP32::can.tryToSend(frame);
 
+    /*
+
     frame.id = can_ids::AX12_R1;
     encodeAX12Read(&frame, ax12_r1);
     ACAN_ESP32::can.tryToSend(frame);
@@ -184,7 +186,7 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     encodeAX12Read(&frame, ax12_r3);
     ACAN_ESP32::can.tryToSend(frame);
 
-    /*frame.id = can_ids::AX12_R4;
+    frame.id = can_ids::AX12_R4;
     encodeAX12Read(&frame, ax12_r4);
     ACAN_ESP32::can.tryToSend(frame);*/
 

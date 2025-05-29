@@ -520,7 +520,6 @@ void loop()
   float bat_elec_voltage = 0;
   for (int i = 0; i < 1; i++)
   {
-    timings[l_time++] = millis();
 
     if (false)
     {
@@ -540,13 +539,11 @@ void loop()
       }
     }
     updateDynamixels();
-    timings[l_time++] = millis();
 
     // updateDynamixelsInfo();
 
     bat_power_voltage = analogRead(BAT_POWER_PIN) * 6.935283019 * 3300.0f / 4096.0f; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
     bat_elec_voltage = analogRead(BAT_ELEC_PIN) * 7.3514 * 3300.0f / 4096.0f;        // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
-    timings[l_time++] = millis();
 
     // Digital inputs
     digital_io_read = 0;
@@ -554,7 +551,6 @@ void loop()
     {
       digital_io_read |= io.myDigitalRead(100 + pin_id) << pin_id;
     }
-    timings[l_time++] = millis();
 
     // Transistors
     io.myDigitalWrite(TRANSISTOR_1_PIN, digital_io_output & (0x1 << 0));
@@ -564,7 +560,6 @@ void loop()
 
     // io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
     //  io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, enables & (0x1 << 1));
-    timings[l_time++] = millis();
 
     for (int j = 0; j < 1; j++) // run loopCAN more often than slow I2C calls
     {
@@ -572,13 +567,6 @@ void loop()
       loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_power_voltage, bat_elec_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue,
               myAX12s[0].commands, myAX12s[1].commands, myAX12s[2].commands, myAX12s[3].commands, myAX12s[4].commands, myAX12s[5].commands,
               myAX12s[0].infos, myAX12s[1].infos, myAX12s[2].infos, myAX12s[3].infos, myAX12s[4].infos, myAX12s[5].infos);
-      timings[l_time++] = millis();
-
-      for (int i = 0; i < 10; i++) // run loopStepper more often than slow stuff
-      {
-        stepper_info = loopStepper(stepperStruct);
-      }
-      timings[l_time++] = millis();
 
       myPersistentServos[0]->angle = SERVO_1_msg.angle_s1;
       myPersistentServos[0]->speed = SERVO_1_msg.speed_s1;
@@ -597,19 +585,23 @@ void loop()
       myPersistentServos[6]->speed = SERVO_2_msg.speed_s3;
       // myPersistentServos[7]->angle = SERVO_2_msg.angle_s4;
       // myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;
-      timings[l_time++] = millis();
 
-      updateServos(myPersistentServos);
-      timings[l_time++] = millis();
+      for (int i_timing_actuators = 0; i_timing_actuators < 5; i_timing_actuators++)
+      {
+        for (int i_steppers = 0; i_steppers < 20; i_steppers++) // run loopStepper more often than slow stuff
+        {
+          stepper_info = loopStepper(stepperStruct);
+        }
+
+        updateServos(myPersistentServos);
+      }
     }
     // delay(5);
   }
 
   loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
-  timings[l_time++] = millis();
 
   showTeamColor(teamIsBlue);
-  timings[l_time++] = millis();
 
   /*Serial.println("### Timings: ###");
 
