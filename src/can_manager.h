@@ -95,8 +95,7 @@ static uint32_t gSentFrameCount = 0;
 //----------------------------------------------------------------------------------------
 //   LOOP
 //----------------------------------------------------------------------------------------
-
-void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *SERVO_2_msg, Stepper *stepperStruct, const StepperInfo *stepper_info, const uint16_t bat_power_voltage, const uint16_t bat_elec_voltage, uint8_t digital_io_read, uint16_t &a_digital_io_output, uint8_t &a_enables, int8_t a_remaining_time_s, int8_t a_is_blue,
+void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *SERVO_2_msg, Stepper *stepperStruct, const StepperInfo *stepper_info, const uint16_t bat_power_voltage, const uint16_t bat_elec_voltage, uint8_t digital_io_read, uint16_t &a_digital_io_output, uint8_t &a_enables, int8_t &a_remaining_time_s, int8_t &a_is_blue,
              AX12Write &ax12_w1, AX12Write &ax12_w2, AX12Write &ax12_w3, AX12Write &ax12_w4, AX12Write &ax12_w5, AX12Write &ax12_w6, const AX12Read &ax12_r1, const AX12Read &ax12_r2, const AX12Read &ax12_r3, const AX12Read &ax12_r4, const AX12Read &ax12_r5, const AX12Read &ax12_r6)
 {
   // Serial.print("."); // debug

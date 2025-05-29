@@ -210,8 +210,10 @@ void loopOled(uint8_t score, int8_t remaining_time, int8_t isBlue, float batt_el
   display.setCursor(70, 0); // In position to print score
   display.print(score);
   display.print(" ");
-  display.setCursor(90, 24);
   display.setTextSize(1);
+  display.setCursor(90, 24);
+  display.print("   ");
+  display.setCursor(90, 24);
   display.print(remaining_time);
   display.setCursor(50, 24);
   if (isBlue == 1)
