@@ -247,27 +247,27 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
       a_digital_io_output = (frame.data_s8[0] << 8) | frame.data_s8[1];
       a_enables = frame.data_s8[2];
     }
-    else if (frame.id >= can_ids::AX12_W1)
+    else if (frame.id == can_ids::AX12_W1)
     {
       decodeAX12Write(&frame, ax12_w1);
     }
-    else if (frame.id >= can_ids::AX12_W2)
+    else if (frame.id == can_ids::AX12_W2)
     {
       decodeAX12Write(&frame, ax12_w2);
     }
-    else if (frame.id >= can_ids::AX12_W3)
+    else if (frame.id == can_ids::AX12_W3)
     {
       decodeAX12Write(&frame, ax12_w3);
     }
-    else if (frame.id >= can_ids::AX12_W4)
+    else if (frame.id == can_ids::AX12_W4)
     {
       decodeAX12Write(&frame, ax12_w4);
     }
-    else if (frame.id >= can_ids::AX12_W5)
+    else if (frame.id == can_ids::AX12_W5)
     {
       decodeAX12Write(&frame, ax12_w5);
     }
-    else if (frame.id >= can_ids::AX12_W6)
+    else if (frame.id == can_ids::AX12_W6)
     {
       decodeAX12Write(&frame, ax12_w6);
     }
