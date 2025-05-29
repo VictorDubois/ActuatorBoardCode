@@ -109,19 +109,26 @@ void setup()
   if (false)
   {
     setupDynamixel();
-    dxl.torqueOn(1);
+    dxl.torqueOn(8);
+    usleep(20000);
 
     while (true)
     {
-      dxl.ledOn(1);
+      dxl.ledOn(8);
+      usleep(20000);
+
       Serial.println("AX12 LED on");
       Serial.flush();
       dxl.setGoalPosition(1, 400);
+      usleep(20000);
 
       delay(1000);
 
-      dxl.ledOff(1);
+      dxl.ledOff(8);
+      usleep(20000);
+
       dxl.setGoalPosition(1, 800);
+      usleep(20000);
 
       Serial.println("AX12 LED off");
       Serial.flush();

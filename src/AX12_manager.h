@@ -53,20 +53,31 @@ void setupDynamixel()
     digitalWrite(PIN_RTS, HIGH);
 
     dxl.setPort(esp_dxl_port);
+    usleep(20000);
+
     dxl.setPortProtocolVersion(1);
+    usleep(20000);
+
     dxl.begin(DYNAMIXEL_BAUDRATE);
+    usleep(20000);
 
     for (int i = 0; i < NB_AX12; i++)
     {
         dxl.setModelNumber(i, AX12_A_MODEL_ID);
+        usleep(20000);
+
         auto id = myAX12s[i].id;
         if (dxl.ping())
         {
+            usleep(20000);
+
             Serial.print("Found dynamixel ");
             Serial.println(id);
         }
         else
         {
+            usleep(20000);
+
             Serial.print("Missing dynamixel ");
             Serial.println(id);
         }
