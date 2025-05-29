@@ -24,7 +24,7 @@
 
 // HardwareSerial MySerial0(0);
 
-TMC2208Stepper driver = TMC2208Stepper(&Serial2, R_SENSE);
+TMC2208Stepper driver = TMC2208Stepper(&SERIAL_PORT, R_SENSE);
 
 constexpr uint32_t steps_per_mm = 41;
 constexpr uint8_t to_mA_accel = 50;

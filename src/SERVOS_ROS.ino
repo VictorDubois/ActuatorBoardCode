@@ -2,7 +2,7 @@
  * Author : Victor Dubois
  ****************************************************************************/
 
-// #define PAMI 1
+//  #define PAMI 1
 #define SUPERSTAR 1
 
 #include <Wire.h>
@@ -165,17 +165,18 @@ void setup()
 
   if (false)
   {
+    int AX12_ID = 8;
     setupDynamixel();
 
     // Test dynamixel
     while (true)
     {
-      dxl.ledOn(1);
+      dxl.ledOn(AX12_ID);
       Serial.println("AX12 LED on");
       Serial.flush();
       delay(1000);
 
-      dxl.ledOff(1);
+      dxl.ledOff(AX12_ID);
       Serial.println("AX12 LED off");
       Serial.flush();
       delay(1000);
@@ -191,7 +192,7 @@ void setup()
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6, 100, 100, 0.8, 112, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7, 100, 100, 0.8, 110, 175);
   // myPersistentServos[servoIndex++] = new PersistentServo(SERVO_8); // Clicou instead
-  // digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
+  digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
 
   // test servos
   if (false)
@@ -256,6 +257,7 @@ void setup()
   // Test Dynamixel
   if (false)
   {
+    int AX12_ID = 8;
     // dxl.torqueOn(1);
     while (true)
     {
@@ -277,15 +279,15 @@ void setup()
         l_ax12_msg.max_speed = 250;
         if (i % 2)
         {
-          dxl.ledOn(1);
+          dxl.ledOn(AX12_ID);
         }
         else
         {
-          dxl.ledOff(1);
+          dxl.ledOff(AX12_ID);
         }
         // dxl.setGoalPosition(1, l_ax12_msg.position);
 
-        updateDynamixel(l_ax12_msg, 1);
+        updateDynamixel(l_ax12_msg, AX12_ID);
         Serial.println(l_ax12_msg.position);
         Serial.flush();
 
@@ -519,6 +521,24 @@ void loop()
   for (int i = 0; i < 1; i++)
   {
     timings[l_time++] = millis();
+
+    if (false)
+    {
+      if ((millis() / 1000) % 2)
+      {
+        dxl.ledOn(myAX12s[0].id);
+        dxl.ledOn(myAX12s[1].id);
+        dxl.ledOn(myAX12s[2].id);
+        dxl.ledOn(255);
+      }
+      else
+      {
+        dxl.ledOff(myAX12s[0].id);
+        dxl.ledOff(myAX12s[1].id);
+        dxl.ledOff(myAX12s[2].id);
+        dxl.ledOff(255);
+      }
+    }
     updateDynamixels();
     timings[l_time++] = millis();
 
@@ -542,8 +562,8 @@ void loop()
     io.myDigitalWrite(TRANSISTOR_3_PIN, digital_io_output & (0x1 << 2));
     io.myDigitalWrite(TRANSISTOR_4_PIN, digital_io_output & (0x1 << 3));
 
-    io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
-    // io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, enables & (0x1 << 1));
+    // io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
+    //  io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, enables & (0x1 << 1));
     timings[l_time++] = millis();
 
     for (int j = 0; j < 1; j++) // run loopCAN more often than slow I2C calls

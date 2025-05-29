@@ -43,7 +43,7 @@ struct AX12
     }
 };
 
-AX12 myAX12s[NB_AX12 + 3] = {AX12(1), AX12(2), AX12(3), AX12(4), AX12(5), AX12(6)};
+AX12 myAX12s[NB_AX12 + 3] = {AX12(8), AX12(7), AX12(5), AX12(20), AX12(21), AX12(22)};
 
 void setupDynamixel()
 {
