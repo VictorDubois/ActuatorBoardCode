@@ -63,10 +63,13 @@ void setupDynamixel()
 
     for (int i = 0; i < NB_AX12; i++)
     {
-        dxl.setModelNumber(i, AX12_A_MODEL_ID);
+        auto id = myAX12s[i].id;
+
+        dxl.setModelNumber(id, AX12_A_MODEL_ID);
         usleep(20000);
 
-        auto id = myAX12s[i].id;
+        Serial.print("getModelNumberFromTable: ");
+        Serial.println(dxl.getModelNumberFromTable(id));
         if (dxl.ping())
         {
             usleep(20000);
