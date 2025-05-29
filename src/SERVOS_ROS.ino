@@ -545,7 +545,6 @@ void loop()
         dxl.ledOff(255);
       }
     }
-    updateDynamixels();
 
     // updateDynamixelsInfo();
 
@@ -601,6 +600,7 @@ void loop()
         }
 
         updateServos(myPersistentServos);
+        updateDynamixels();
       }
     }
     // delay(5);

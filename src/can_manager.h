@@ -53,13 +53,13 @@ void encodeAX12Read(CANMessage *frame, const AX12Read a_ax12_read)
 
 void decodeAX12Write(const CANMessage *frame, AX12Write &a_ax12_write)
 {
-  a_ax12_write.mode = frame->data_s8[0];
-  a_ax12_write.position = (frame->data_s8[1] << 8) | frame->data_s8[2];
-  a_ax12_write.max_accel = frame->data_s8[3];
-  a_ax12_write.max_speed = frame->data_s8[4];
-  a_ax12_write.torque_enable = frame->data_s8[5];
-  a_ax12_write.temperatureLimit = frame->data_s8[6];
-  a_ax12_write.currentLimit = frame->data_s8[7];
+  a_ax12_write.mode = (uint8_t)frame->data_s8[0];
+  a_ax12_write.position = (((uint8_t)frame->data_s8[1]) << 8) | ((uint8_t)frame->data_s8[2]);
+  a_ax12_write.max_accel = (uint8_t)frame->data_s8[3];
+  a_ax12_write.max_speed = (uint8_t)frame->data_s8[4];
+  a_ax12_write.torque_enable = (uint8_t)frame->data_s8[5];
+  a_ax12_write.temperatureLimit = (uint8_t)frame->data_s8[6];
+  a_ax12_write.currentLimit = (uint8_t)frame->data_s8[7];
 }
 
 //----------------------------------------------------------------------------------------
