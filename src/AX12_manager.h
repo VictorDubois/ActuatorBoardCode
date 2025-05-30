@@ -18,6 +18,21 @@ const uint32_t DYNAMIXEL_BAUDRATE = 1000000;
 Dynamixel2Arduino dxl;
 ESP32SerialPortHandler esp_dxl_port(DYNAMIXEL_SERIAL, DYNAMIXEL_SERIAL_RX_pin, DYNAMIXEL_SERIAL_TX_pin, PIN_RTS);
 
+uint8_t sequenced_updates_servo = 0;      // Do not update everything all at once
+uint8_t sequenced_updates_subcommand = 0; // Do not update everything all at once
+
+enum AX12_subcommand
+{
+    position = 0,
+    torque_enable = 1,
+    max_current = 2,
+    max_speed = 3,
+    end_of_commands = 4,
+    // Not used:
+    max_accel = 5,
+    max_temperature = 6
+};
+
 struct AX12
 {
     int8_t id;
@@ -90,7 +105,12 @@ void setupDynamixel()
 void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
 {
     // a_ax12_msg.mode == // by default, they are all in position mode
-
+    uint8_t i_subcommand = sequenced_updates_subcommand;
+    sequenced_updates_subcommand++;
+    if (sequenced_updates_subcommand >= AX12_subcommand::end_of_commands)
+    {
+        sequenced_updates_subcommand = 0;
+    }
     if (a_ax12_msg.currentLimit > 100)
     {
         a_ax12_msg.currentLimit = 100;
@@ -101,30 +121,54 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
         a_ax12_msg.max_speed = 100;
     }
 
-    dxl.setGoalPosition(ax12_id, a_ax12_msg.position);
-    if (a_ax12_msg.torque_enable)
+    switch (sequenced_updates_subcommand)
     {
-        dxl.torqueOn(ax12_id);
+    case AX12_subcommand::position:
+        dxl.setGoalPosition(ax12_id, a_ax12_msg.position);
+        break;
+    case AX12_subcommand::torque_enable:
+        if (a_ax12_msg.torque_enable)
+        {
+            dxl.torqueOn(ax12_id);
+        }
+        else
+        {
+            dxl.torqueOff(ax12_id);
+        }
+        break;
+    case AX12_subcommand::max_accel:
+        if (a_ax12_msg.max_accel != -1)
+        {
+            // dxl.setAccelerationLimit(ax12_id, a_ax12_msg.max_accel);
+        }
+        break;
+    case AX12_subcommand::max_speed:
+        if (a_ax12_msg.max_speed != -1)
+        {
+            dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed, UNIT_PERCENT);
+        }
+        break;
+    case AX12_subcommand::max_current:
+        if (a_ax12_msg.currentLimit != -1)
+        {
+            dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
+        }
+        break;
+
+    case AX12_subcommand::max_temperature:
+        if (a_ax12_msg.temperatureLimit != -1)
+        {
+            // dxl.setTemperatureLimit(ax12_id, a_ax12_msg.temperatureLimit);
+        }
+        break;
+    default:
+        // ERROR!
+        break;
     }
-    else
-    {
-        dxl.torqueOff(ax12_id);
-    }
+
     if (a_ax12_msg.currentLimit != -1)
     {
         dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
-    }
-    if (a_ax12_msg.max_speed != -1)
-    {
-        dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed, UNIT_PERCENT);
-    }
-    if (a_ax12_msg.temperatureLimit != -1)
-    {
-        // dxl.setTemperatureLimit(ax12_id, a_ax12_msg.temperatureLimit);
-    }
-    if (a_ax12_msg.max_accel != -1)
-    {
-        // dxl.setAccelerationLimit(ax12_id, a_ax12_msg.max_accel);
     }
 }
 
@@ -142,9 +186,12 @@ void updateDynamixelInfo(CAN::AX12Read &a_ax12_msg, uint8_t ax12_id)
 
 void updateDynamixels()
 {
-    for (int i = 0; i < NB_AX12; i++)
+    uint8_t i_servo = sequenced_updates_servo;
+    updateDynamixel(myAX12s[i_servo].commands, myAX12s[i_servo].id);
+    sequenced_updates_servo++;
+    if (sequenced_updates_servo >= NB_AX12)
     {
-        updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
+        sequenced_updates_servo = 0;
     }
 }
 
