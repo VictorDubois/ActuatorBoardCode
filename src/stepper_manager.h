@@ -110,13 +110,10 @@ StepperInfo loopStepper(Stepper &stepperStruct)
       stepper.moveTo(stepperStruct.position * steps_per_mm);
       last_set_position = stepperStruct.position * steps_per_mm;
     }
-    for (int j = 0; j < 100; j++)
+
+    // Focus on sending the stepper where it needs to
+    while (stepper.run())
     {
-      stillWorkToDo = stepper.run();
-    }
-    if (!stillWorkToDo)
-    {
-      // Serial.println("target reached!");
     }
     stepper_info.distance_to_go = stepper.distanceToGo() / steps_per_mm;
     break;
@@ -143,9 +140,6 @@ StepperInfo loopStepper(Stepper &stepperStruct)
 
     while (digitalRead(END_STOP_PIN) == HIGH)
     {
-
-      Serial.println("END_STOP_PIN");
-      Serial.println(digitalRead(END_STOP_PIN));
       if (millis() > homingTimeout)
       {
         Serial.println("Failed to home stepper: timeout reached");
