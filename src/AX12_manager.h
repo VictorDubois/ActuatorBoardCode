@@ -121,49 +121,52 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
         a_ax12_msg.max_speed = 100;
     }
 
-    switch (sequenced_updates_subcommand)
+    if (ax12_id == 8)
     {
-    case AX12_subcommand::position:
-        dxl.setGoalPosition(ax12_id, a_ax12_msg.position);
-        break;
-    case AX12_subcommand::torque_enable:
-        if (a_ax12_msg.torque_enable)
+        // Ce servo reçoit parfois des messges buggés
+        a_ax12_msg.max_speed = 10;
+        if (a_ax12_msg.position > 400)
         {
-            dxl.torqueOn(ax12_id);
+            a_ax12_msg.position = 400;
         }
-        else
+        if (a_ax12_msg.position < 100)
         {
-            dxl.torqueOff(ax12_id);
+            a_ax12_msg.position = 100;
         }
-        break;
-    case AX12_subcommand::max_accel:
-        if (a_ax12_msg.max_accel != -1)
-        {
-            // dxl.setAccelerationLimit(ax12_id, a_ax12_msg.max_accel);
-        }
-        break;
-    case AX12_subcommand::max_speed:
-        if (a_ax12_msg.max_speed != -1)
-        {
-            dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed, UNIT_PERCENT);
-        }
-        break;
-    case AX12_subcommand::max_current:
-        if (a_ax12_msg.currentLimit != -1)
-        {
-            dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
-        }
-        break;
+    }
 
-    case AX12_subcommand::max_temperature:
-        if (a_ax12_msg.temperatureLimit != -1)
-        {
-            // dxl.setTemperatureLimit(ax12_id, a_ax12_msg.temperatureLimit);
-        }
-        break;
-    default:
-        // ERROR!
-        break;
+    dxl.setGoalPosition(ax12_id, a_ax12_msg.position);
+    usleep(1000);
+
+    if (a_ax12_msg.torque_enable)
+    {
+        dxl.torqueOn(ax12_id);
+    }
+    else
+    {
+        dxl.torqueOff(ax12_id);
+    }
+    usleep(1000);
+
+    if (a_ax12_msg.max_accel != -1)
+    {
+        // dxl.setAccelerationLimit(ax12_id, a_ax12_msg.max_accel);
+    }
+
+    if (a_ax12_msg.max_speed != -1)
+    {
+        dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed, UNIT_PERCENT);
+    }
+    usleep(1000);
+
+    if (a_ax12_msg.currentLimit != -1)
+    {
+        dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
+    }
+
+    if (a_ax12_msg.temperatureLimit != -1)
+    {
+        // dxl.setTemperatureLimit(ax12_id, a_ax12_msg.temperatureLimit);
     }
 
     if (a_ax12_msg.currentLimit != -1)
