@@ -53,13 +53,13 @@ void encodeAX12Read(CANMessage *frame, const AX12Read a_ax12_read)
 
 void decodeAX12Write(const CANMessage *frame, AX12Write &a_ax12_write)
 {
-  a_ax12_write.mode = (uint8_t)frame->data_s8[0];
-  a_ax12_write.position = (((uint8_t)frame->data_s8[1]) << 8) | ((uint8_t)frame->data_s8[2]);
-  a_ax12_write.max_accel = (uint8_t)frame->data_s8[3];
-  a_ax12_write.max_speed = (uint8_t)frame->data_s8[4];
-  a_ax12_write.torque_enable = (uint8_t)frame->data_s8[5];
-  a_ax12_write.temperatureLimit = (uint8_t)frame->data_s8[6];
-  a_ax12_write.currentLimit = (uint8_t)frame->data_s8[7];
+  a_ax12_write.mode = (uint8_t)frame->data[0];
+  a_ax12_write.position = (((uint8_t)frame->data[1]) << 8) | ((uint8_t)frame->data[2]);
+  a_ax12_write.max_accel = (uint8_t)frame->data[3];
+  a_ax12_write.max_speed = (uint8_t)frame->data[4];
+  a_ax12_write.torque_enable = (uint8_t)frame->data[5];
+  a_ax12_write.temperatureLimit = (uint8_t)frame->data[6];
+  a_ax12_write.currentLimit = (uint8_t)frame->data[7];
 }
 
 //----------------------------------------------------------------------------------------
@@ -205,37 +205,37 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     gReceivedFrameCount += 1;
     if (frame.id == SERVO_1)
     {
-      SERVO_1_msg->angle_s1 = frame.data_s8[0];
-      SERVO_1_msg->speed_s1 = frame.data_s8[1]; // 0 means disable the servo
-      SERVO_1_msg->angle_s2 = frame.data_s8[2];
-      SERVO_1_msg->speed_s2 = frame.data_s8[3]; // 0 means disable the servo
-      SERVO_1_msg->angle_s3 = frame.data_s8[4];
-      SERVO_1_msg->speed_s3 = frame.data_s8[5]; // 0 means disable the servo
-      SERVO_1_msg->angle_s4 = frame.data_s8[6];
-      SERVO_1_msg->speed_s4 = frame.data_s8[7]; // 0 means disable the servo
+      SERVO_1_msg->angle_s1 = frame.data[0];
+      SERVO_1_msg->speed_s1 = frame.data[1]; // 0 means disable the servo
+      SERVO_1_msg->angle_s2 = frame.data[2];
+      SERVO_1_msg->speed_s2 = frame.data[3]; // 0 means disable the servo
+      SERVO_1_msg->angle_s3 = frame.data[4];
+      SERVO_1_msg->speed_s3 = frame.data[5]; // 0 means disable the servo
+      SERVO_1_msg->angle_s4 = frame.data[6];
+      SERVO_1_msg->speed_s4 = frame.data[7]; // 0 means disable the servo
 
       pinged = true;
     }
     else if (frame.id == SERVO_2)
     {
-      SERVO_2_msg->angle_s1 = frame.data_s8[0];
-      SERVO_2_msg->speed_s1 = frame.data_s8[1]; // 0 means disable the servo
-      SERVO_2_msg->angle_s2 = frame.data_s8[2];
-      SERVO_2_msg->speed_s2 = frame.data_s8[3]; // 0 means disable the servo
-      SERVO_2_msg->angle_s3 = frame.data_s8[4];
-      SERVO_2_msg->speed_s3 = frame.data_s8[5]; // 0 means disable the servo
-      SERVO_2_msg->angle_s4 = frame.data_s8[6];
-      SERVO_2_msg->speed_s4 = frame.data_s8[7]; // 0 means disable the servo
+      SERVO_2_msg->angle_s1 = frame.data[0];
+      SERVO_2_msg->speed_s1 = frame.data[1]; // 0 means disable the servo
+      SERVO_2_msg->angle_s2 = frame.data[2];
+      SERVO_2_msg->speed_s2 = frame.data[3]; // 0 means disable the servo
+      SERVO_2_msg->angle_s3 = frame.data[4];
+      SERVO_2_msg->speed_s3 = frame.data[5]; // 0 means disable the servo
+      SERVO_2_msg->angle_s4 = frame.data[6];
+      SERVO_2_msg->speed_s4 = frame.data[7]; // 0 means disable the servo
 
       pinged = true;
     }
     else if (frame.id == STEPPER_CMD)
     {
-      stepperStruct->speed = (frame.data_s8[0] << 8) | frame.data_s8[1];
-      stepperStruct->accel = (frame.data_s8[2] << 8) | frame.data_s8[3];
-      stepperStruct->position = (frame.data_s8[4] << 8) | frame.data_s8[5];
-      stepperStruct->current = frame.data_s8[6];
-      stepperStruct->mode = frame.data_s8[7];
+      stepperStruct->speed = (frame.data[0] << 8) | frame.data[1];
+      stepperStruct->accel = (frame.data[2] << 8) | frame.data[3];
+      stepperStruct->position = (frame.data[4] << 8) | frame.data[5];
+      stepperStruct->current = frame.data[6];
+      stepperStruct->mode = frame.data[7];
     }
     else if (frame.id == can_ids::SCORE)
     {
@@ -251,8 +251,8 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
       vacuum_2_release = frame.data[3];
       /*
       // old syntax, we do not respect the official format anymore, it is late and I want to sleep
-      a_digital_io_output = (frame.data_s8[0] << 8) | frame.data_s8[1];
-      a_enables = frame.data_s8[2];*/
+      a_digital_io_output = (frame.data[0] << 8) | frame.data[1];
+      a_enables = frame.data[2];*/
     }
     else if (frame.id == can_ids::AX12_W1)
     {
