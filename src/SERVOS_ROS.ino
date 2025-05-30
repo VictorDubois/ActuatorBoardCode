@@ -571,7 +571,6 @@ void loop()
     io.myDigitalWrite(TRANSISTOR_4_PIN, vacuum_1_enable_pump);
 
     // io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
-    //  io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, enables & (0x1 << 1));
 
     for (int j = 0; j < 1; j++) // run loopCAN more often than slow I2C calls
     {
@@ -598,6 +597,15 @@ void loop()
       myPersistentServos[6]->speed = SERVO_2_msg.speed_s3;
       // myPersistentServos[7]->angle = SERVO_2_msg.angle_s4;
       // myPersistentServos[7]->speed = SERVO_2_msg.speed_s4;
+
+      if (stepperStruct.mode != 0)
+      {
+        io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, HIGH);
+      }
+      else
+      {
+        io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, LOW);
+      }
 
       for (int i_timing_actuators = 0; i_timing_actuators < 5; i_timing_actuators++)
       {
