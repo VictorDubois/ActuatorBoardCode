@@ -195,7 +195,7 @@ void setup()
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, 132, 100, 0.8, 52, 132);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, 144, 100, 0.8, 67, 144);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, 150, 100, 0.8, 62, 150);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5, 175, 100, 0.8, 115, 175);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5, 175, 100, 0.8, 100, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6, 100, 100, 0.8, 112, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7, 100, 100, 0.8, 110, 175);
   // myPersistentServos[servoIndex++] = new PersistentServo(SERVO_8); // Clicou instead
