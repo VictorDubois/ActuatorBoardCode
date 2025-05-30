@@ -33,6 +33,8 @@ int32_t last_set_current = 0;
 int32_t last_set_position = 0;
 auto homingTimeout = millis() + 15000;
 
+bool homingHasJustBeenDone = false;
+
 #include <AccelStepper.h>
 AccelStepper stepper = AccelStepper(stepper.DRIVER, STEP_PIN, DIR_PIN);
 
@@ -78,6 +80,7 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     stepper.disableOutputs();
     break;
   case stepper_mode::POSITION:
+    homingHasJustBeenDone = false;
     stepper.enableOutputs();
 
     /*if (stepper.acceleration() != stepperStruct.accel * steps_per_mm)
@@ -118,6 +121,7 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     stepper_info.distance_to_go = stepper.distanceToGo() / steps_per_mm;
     break;
   case stepper_mode::SPEED:
+    homingHasJustBeenDone = false;
     last_set_position = 0;
     stepper.enableOutputs();
     stepper.setSpeed(stepperStruct.speed * steps_per_mm);
@@ -126,6 +130,10 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     stepper.runSpeed();
     break;
   case stepper_mode::HOMING:
+    if (homingHasJustBeenDone)
+    {
+      stepper.disableOutputs();
+    }
     last_set_position = 0;
     stepper.enableOutputs();
     stepper.setSpeed(stepperStruct.speed * steps_per_mm);
@@ -147,6 +155,7 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     }
     stepper.setCurrentPosition(0);
     stepper_info.homing_sequences_done++;
+    homingHasJustBeenDone = true;
     stepper.disableOutputs();
     break;
   default:
