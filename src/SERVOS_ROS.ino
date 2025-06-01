@@ -166,6 +166,18 @@ void setup()
   io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
   io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
 
+  SERVO_1_msg.angle_s1 = 67;
+  SERVO_1_msg.angle_s2 = 52;
+  SERVO_1_msg.angle_s3 = 67;
+  SERVO_1_msg.angle_s4 = 62;
+  SERVO_1_msg.speed_s1 = 100;
+  SERVO_1_msg.speed_s2 = 100;
+  SERVO_1_msg.speed_s3 = 100;
+  SERVO_1_msg.speed_s4 = 100;
+
+  SERVO_2_msg.angle_s1 = 175;
+  SERVO_2_msg.speed_s1 = 100;
+
   Serial.println("io pinmode done");
 
   setupOled();
@@ -191,10 +203,10 @@ void setup()
   }
 
   int servoIndex = 0;
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, 144, 100, 0.8, 67, 144);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, 132, 100, 0.8, 52, 132);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, 144, 100, 0.8, 67, 144);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, 150, 100, 0.8, 62, 150);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, 67, 100, 0.8, 67, 144);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, 52, 100, 0.8, 52, 132);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, 67, 100, 0.8, 67, 144);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, 62, 100, 0.8, 62, 150);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5, 175, 100, 0.8, 100, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6, 100, 100, 0.8, 112, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7, 100, 100, 0.8, 110, 175);
