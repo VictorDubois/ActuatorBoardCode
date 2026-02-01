@@ -34,7 +34,7 @@ struct CanMessage
 //  ESP32 Desired Bit Rate
 //----------------------------------------------------------------------------------------
 
-static const uint32_t DESIRED_BIT_RATE = 500UL * 1000UL; // 500 kb/s
+static const uint32_t DESIRED_BIT_RATE = 1000UL * 1000UL; // 1 Mb/s
 bool pinged = false;
 
 void encodeAX12Read(CANMessage *frame, const AX12Read a_ax12_read)
