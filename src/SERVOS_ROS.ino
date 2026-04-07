@@ -2,14 +2,10 @@
  * Author : Victor Dubois
  ****************************************************************************/
 
-//  #define PAMI 1
-#define SUPERSTAR 1
-
 #include <Wire.h>
 #include "CanStruct/can_structs.h"
 using namespace CAN;
 
-#ifndef PAMI // actuator board
 #include "can_manager.h"
 #include "stepper_manager.h"
 #include "AX12_manager.h"
@@ -17,13 +13,6 @@ using namespace CAN;
 ServoMessage SERVO_1_msg;
 ServoMessage SERVO_2_msg;
 Stepper stepperStruct;
-#endif
-
-#ifdef PAMI
-#include "diff_drive_steppers.h"
-#include "MPU6050.h"
-#include "VL53L0X.h"
-#endif
 
 #include "oled_manager.h"
 #include "servos_manager.h"
@@ -87,7 +76,6 @@ void initI2C()
 #endif
 }
 
-#ifndef PAMI // Actuator board
 void setup()
 {
   // For the PCB with the broken DCDC
@@ -416,114 +404,6 @@ void setup()
     loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
   }
 }
-#else
-void setup() // PAMI
-{
-  // For the PCB with the broken DCDC
-  // pinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
-  // digitalWrite(SERVO_POWER_ENABLE_PIN, LOW);
-  Serial.begin(115200);
-  Serial.setTimeout(100);
-  Serial.println("PAMI setup");
-
-  initI2C();
-
-  io.begin();
-
-  io.myPinMode(TIRETTE_PAMI_PIN, INPUT);
-  io.myPinMode(TEAM_COLOR_PAMI_PIN, INPUT);
-  io.myPinMode(CAN_DETECT_2, INPUT);
-  io.myPinMode(CAN_DETECT_3, INPUT);
-  io.myPinMode(TRANSISTOR_1_PIN, OUTPUT);
-  io.myPinMode(TRANSISTOR_3_PIN, OUTPUT);
-  io.myPinMode(I2C_EXTRA_1, OUTPUT);
-  io.myPinMode(I2C_EXTRA_2, OUTPUT);
-
-  io.myPinMode(STEPPER_POWER_ENABLE_PIN, OUTPUT);
-  io.myPinMode(SERVO_POWER_ENABLE_PIN, OUTPUT);
-  io.myPinMode(TRANSISTOR_2_PIN, OUTPUT);
-  io.myPinMode(TRANSISTOR_4_PIN, OUTPUT);
-  io.myPinMode(BAT_POWER_PIN, INPUT);
-
-  myPersistentServos[0] = new PersistentServo(SERVO_1);
-
-  // setupVL53L0XDual(&io);
-  setupVL53L0XSingle();
-
-  setupAccelStepPami();
-
-  setupMPU6050();
-
-  setupOled(true, SUPERSTAR);
-
-  // Wait Tirette
-  while (io.myDigitalRead(TIRETTE_PAMI_PIN))
-  {
-    delay(10);
-  }
-  timestamp_start_match = millis();
-  uint32_t timeout_start_PAMI = timestamp_start_match + 85000;
-  endOfMatch = timestamp_start_match + 100000;
-
-  teamIsBlue = io.myDigitalRead(TEAM_COLOR_PAMI_PIN);
-
-  showTeamColor(teamIsBlue);
-
-  // wait for PAMI-time to come
-  while (timeout_start_PAMI > millis())
-  {
-    float bat_12V_voltage = analogRead(BAT_POWER_PIN) * 6.23 * 3300 / 4096; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
-    loopOled((millis() - timestamp_start_match) / 1000, teamIsBlue, bat_12V_voltage);
-    delay(10);
-  }
-
-  endOfMatch = millis() + 15000;
-  Serial.println("PAMI GO !");
-}
-
-#endif
-
-#ifdef PAMI
-void funnyAction()
-{
-  myPersistentServos[0]->angle = 45;
-  if (millis() / 1000 % 2)
-  {
-    myPersistentServos[0]->angle = 100;
-  }
-  myPersistentServos[0]->update();
-}
-
-void loop()
-{
-  VL53L0X_RangingMeasurementData_t measureFront;
-  VL53L0X_RangingMeasurementData_t measureRear;
-  bool tiltedRight = false;
-  bool tiltedLeft = false;
-  bool tiltedFront = false;
-  // read_dual_sensors(&io, &measureFront, &measureRear);
-  read_single_sensor(&io, &measureFront);
-  bool stop = obstaclePresent(&measureFront, 100);
-  updateTiltedStatus(tiltedRight, tiltedLeft, tiltedFront);
-
-  float bat_12V_voltage = analogRead(BAT_POWER_PIN) * 6.23 * 3300 / 4096; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
-
-  loopOled((millis() - timestamp_start_match) / 1000, teamIsBlue, bat_12V_voltage);
-
-  if (millis() > endOfMatch)
-  {
-    funnyAction();
-    stop = true;
-    Serial.println("End of match!");
-    disableSteppers();
-    delay(1000);
-  }
-  for (int i = 0; i < 10; i++) // run loopStepper more often than slow I2C calls
-  {
-    loopStepperPami(stop, tiltedLeft, tiltedRight, teamIsBlue, tiltedFront);
-  }
-}
-#else // not PAMI
 
 uint8_t digital_io_read;
 uint16_t digital_io_output = 0;
@@ -652,4 +532,3 @@ void loop()
   // Serial.println(myPersistentServos[0]->angle);
   // Serial.println(current_score);
 }
-#endif
