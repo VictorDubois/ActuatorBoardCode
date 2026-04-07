@@ -461,6 +461,8 @@ void loop()
 
     io.myDigitalWrite(TRANSISTOR_2_PIN, vacuum_1_release);
     io.myDigitalWrite(TRANSISTOR_4_PIN, vacuum_1_enable_pump);
+    io.myDigitalWrite(TRANSISTOR_1_PIN, vacuum_2_release);
+    io.myDigitalWrite(TRANSISTOR_3_PIN, vacuum_2_enable_pump);
 
     // io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
 
