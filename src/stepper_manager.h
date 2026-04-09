@@ -5,9 +5,10 @@
 #pragma once
 #include <TMCStepper.h> // https://github.com/adafruit/Adafruit_MPU6050
 #include <HardwareSerial.h>
+#include <io_expender_manager.h>
 #include "CanStruct/can_structs.h"
 
-#define END_STOP_PIN 43 // =Servo8
+#define END_STOP_PIN 103 // =Servo8
 
 #define EN_PIN 5            // Enable
 #define DIR_PIN 12          // Direction
@@ -38,7 +39,7 @@ bool homingHasJustBeenDone = false;
 #include <AccelStepper.h>
 AccelStepper stepper = AccelStepper(stepper.DRIVER, STEP_PIN, DIR_PIN);
 
-void setupAccelStep()
+void setupAccelStep(IOPotentiallyExpended io)
 {
   // MySerial0.begin(115200, SERIAL_8N1, SW_RX, SW_TX);
   Serial2.begin(115200, SERIAL_8N1, SW_RX, SW_TX);
@@ -57,10 +58,10 @@ void setupAccelStep()
 
   stepper_info.homing_sequences_done = 0;
 
-  pinMode(END_STOP_PIN, INPUT_PULLUP);
+  io.myPinMode(END_STOP_PIN, INPUT_PULLUP);
 }
 
-StepperInfo loopStepper(Stepper &stepperStruct)
+StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
 {
 
   // if(driver.rms_current() != stepperStruct.current * to_mA_accel)
@@ -134,11 +135,11 @@ StepperInfo loopStepper(Stepper &stepperStruct)
     last_set_position = 0;
     stepper.enableOutputs();
     stepper.setSpeed(stepperStruct.speed * steps_per_mm);
-    stepper.move(-1000 * steps_per_mm);
+    stepper.move(1000 * steps_per_mm);
     homingTimeout = millis() + 15000;
     Serial.println("Start homing stepper");
 
-    while (digitalRead(END_STOP_PIN) == HIGH)
+    while (io.myDigitalRead(END_STOP_PIN) == HIGH)
     {
       if (millis() > homingTimeout)
       {

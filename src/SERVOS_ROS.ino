@@ -245,7 +245,7 @@ void setup()
   }
   delay(15);
   Serial.println("Init AccelStep");
-  setupAccelStep();
+  setupAccelStep(io);
 
   // digitalWrite(SUCTION_CUP_PIN, HIGH);
   // digitalWrite(VALVE_PIN, HIGH);
@@ -329,7 +329,7 @@ void setup()
   stepperStructHoming.position = 0;  // mm
   stepperStructHoming.mode = stepper_mode::HOMING;
   // stepperStructHoming.mode = stepper_mode::POSITION;
-  loopStepper(stepperStructHoming);
+  loopStepper(stepperStructHoming, io);
 
   // Do not move
   stepperStruct.mode = stepper_mode::POSITION;
@@ -373,7 +373,7 @@ void setup()
       {
         Serial.println(0);
       }
-      loopStepper(stepperStructHoming);
+      loopStepper(stepperStructHoming, io);
     }
   }
 
@@ -505,7 +505,7 @@ void loop()
       {
         for (int i_steppers = 0; i_steppers < 20; i_steppers++) // run loopStepper more often than slow stuff
         {
-          stepper_info = loopStepper(stepperStruct);
+          stepper_info = loopStepper(stepperStruct, io);
         }
 
         updateServos(myPersistentServos);
