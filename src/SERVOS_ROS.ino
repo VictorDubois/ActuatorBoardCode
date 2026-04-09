@@ -154,10 +154,10 @@ void setup()
   io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
   io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
 
-  SERVO_1_msg.angle_s1 = 67;
-  SERVO_1_msg.angle_s2 = 52;
-  SERVO_1_msg.angle_s3 = 67;
-  SERVO_1_msg.angle_s4 = 62;
+  SERVO_1_msg.angle_s1 = 0;
+  SERVO_1_msg.angle_s2 = 0;
+  SERVO_1_msg.angle_s3 = 0;
+  SERVO_1_msg.angle_s4 = 0;
   SERVO_1_msg.speed_s1 = 100;
   SERVO_1_msg.speed_s2 = 100;
   SERVO_1_msg.speed_s3 = 100;
@@ -191,10 +191,10 @@ void setup()
   }
 
   int servoIndex = 0;
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, 67, 100, 0.8, 67, 144);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, 52, 100, 0.8, 52, 132);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, 67, 100, 0.8, 67, 144);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, 62, 100, 0.8, 62, 150);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, SERVO_1_msg.angle_s1, 100, 0.8, 67, 144);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, SERVO_1_msg.angle_s1, 100, 0.8, 52, 132);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, SERVO_1_msg.angle_s1, 100, 0.8, 67, 144);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, SERVO_1_msg.angle_s1, 100, 0.8, 62, 150);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5, 175, 100, 0.8, 100, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6, 100, 100, 0.8, 112, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7, 100, 100, 0.8, 110, 175);
@@ -211,10 +211,10 @@ void setup()
     while (true)
     {
       Serial.println("128");
-      myPersistentServos[0]->angle = 144; // 144 = relache tout à droite
-      myPersistentServos[1]->angle = 132; // 132 = relache milieu droite
-      myPersistentServos[2]->angle = 144; // 144 = relache milieu gauche
-      myPersistentServos[3]->angle = 150; // 150 = relache tout à gauche
+      myPersistentServos[0]->angle = 0;   // 0 = endroit tout à droite
+      myPersistentServos[1]->angle = 0;   // 0 = endroit milieu droite
+      myPersistentServos[2]->angle = 0;   // 0 = endroit milieu gauche
+      myPersistentServos[3]->angle = 0;   // 0 = endroit tout à gauche
       myPersistentServos[4]->angle = 175; // 175 = doigt en bas
       myPersistentServos[5]->angle = 175;
       myPersistentServos[6]->angle = 175;
@@ -224,10 +224,10 @@ void setup()
       delay(1000);
 
       Serial.println("70");
-      myPersistentServos[0]->angle = 67;  // 67 = attrape tout à droite
-      myPersistentServos[1]->angle = 52;  // 52 = attrape milieu droite
-      myPersistentServos[2]->angle = 67;  // 67 = attrape milieu gauche
-      myPersistentServos[3]->angle = 62;  // 62 = attrape tout à gauche
+      myPersistentServos[0]->angle = 180; // 180 = autre sens tout à droite
+      myPersistentServos[1]->angle = 180; // 180 = autre sens milieu droite
+      myPersistentServos[2]->angle = 180; // 180 = autre sens milieu gauche
+      myPersistentServos[3]->angle = 180; // 180 = autre sens tout à gauche
       myPersistentServos[4]->angle = 115; // 110 doigt à l'horizontale
       myPersistentServos[5]->angle = 112;
       myPersistentServos[6]->angle = 110;
