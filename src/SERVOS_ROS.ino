@@ -220,8 +220,11 @@ void setup()
       myPersistentServos[6]->angle = 175;
       // myPersistentServos[7]->angle = 128;
 
-      updateServos(myPersistentServos);
-      delay(1000);
+      for (int l_i = 0; l_i < 100; l_i++)
+      {
+        updateServos(myPersistentServos);
+        delay(30);
+      }
 
       Serial.println("70");
       myPersistentServos[0]->angle = 180; // 180 = autre sens tout à droite
@@ -239,8 +242,11 @@ void setup()
       // full gauche 115 attrape 205 relache (testeur)
       // doigt bas 230 haut 168 (testeur)
 
-      updateServos(myPersistentServos);
-      delay(1000);
+      for (int l_i = 0; l_i < 100; l_i++)
+      {
+        updateServos(myPersistentServos);
+        delay(30);
+      }
     }
   }
   delay(15);
