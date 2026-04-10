@@ -11,7 +11,9 @@ struct PersistentServo
         : pin(pin), angle(angle), speed(speed), easing_constant(easing_constant), min_angle(min_angle), max_angle(max_angle)
     {
         pinMode(pin, OUTPUT);
-        servo_lib_handler.attach(pin);
+        const int min_angle_microseconds = 500; // To use the servo to its full potential
+        const int max_angle_microseconds = 2500;
+        servo_lib_handler.attach(pin, min_angle_microseconds, max_angle_microseconds);
     }
     PersistentServo(uint16_t pin, int16_t angle, int16_t speed, double easing_constant) : PersistentServo(pin, angle, speed, easing_constant, 0, 65000) {}
     PersistentServo(uint16_t pin) : PersistentServo(pin, 100, 100, 0.8) {}
