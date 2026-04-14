@@ -191,10 +191,10 @@ void setup()
   }
 
   int servoIndex = 0;
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, SERVO_1_msg.angle_s1, 100, 0.8, 67, 144);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, SERVO_1_msg.angle_s1, 100, 0.8, 52, 132);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, SERVO_1_msg.angle_s1, 100, 0.8, 67, 144);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, SERVO_1_msg.angle_s1, 100, 0.8, 62, 150);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, SERVO_1_msg.angle_s1, 100, 0.95, 0, 180);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, SERVO_1_msg.angle_s1, 100, 0.95, 0, 180);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, SERVO_1_msg.angle_s1, 100, 0.95, 0, 180);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, SERVO_1_msg.angle_s1, 100, 0.95, 0, 180);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5, 175, 100, 0.8, 100, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6, 100, 100, 0.8, 112, 175);
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7, 100, 100, 0.8, 110, 175);
