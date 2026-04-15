@@ -10,11 +10,24 @@
 
 #define END_STOP_PIN 103 // =Servo8
 
-#define EN_PIN 5            // Enable
-#define DIR_PIN 12          // Direction
-#define STEP_PIN 11         // Step
-#define SW_RX 2             // TMC2208/TMC2224 SoftwareSerial receive pin
-#define SW_TX 38            // TMC2208/TMC2224 SoftwareSerial transmit pin
+#define EN_PIN 5 // Enable
+
+#define DIR_PIN_U3 12  // Direction
+#define STEP_PIN_U3 11 // Step
+/*
+// Stepper U3
+#define DIR_PIN 12  // Direction
+#define STEP_PIN 11 // Step
+#define SW_RX 2     // TMC2208/TMC2224 SoftwareSerial receive pin
+#define SW_TX 38    // TMC2208/TMC2224 SoftwareSerial transmit pin
+*/
+
+// Stepper U4
+#define DIR_PIN 16 // Direction
+#define STEP_PIN 8 // Step
+#define SW_RX 2    // TMC2208/TMC2224 SoftwareSerial receive pin
+#define SW_TX 15   // TMC2208/TMC2224 SoftwareSerial transmit pin (actually pin 42, but also plugged to SERVO7)
+
 #define SERIAL_PORT Serial1 // TMC2208/TMC2224 HardwareSerial port
 
 #define R_SENSE 0.11f // Match to your driver
@@ -37,6 +50,7 @@ auto homingTimeout = millis() + 15000;
 bool homingHasJustBeenDone = false;
 
 #include <AccelStepper.h>
+
 AccelStepper stepper = AccelStepper(stepper.DRIVER, STEP_PIN, DIR_PIN);
 
 void setupAccelStep(IOPotentiallyExpended io)
@@ -49,6 +63,9 @@ void setupAccelStep(IOPotentiallyExpended io)
   // driver.en_pwm_mode(1);      // Enable extremely quiet stepping
   driver.pwm_autoscale(1);
   driver.microsteps(4);
+
+  io.myPinMode(DIR_PIN, OUTPUT);
+  io.myPinMode(STEP_PIN, OUTPUT);
 
   stepper.setMaxSpeed(500 * steps_per_mm);      // 100mm/s @ 80 steps/mm
   stepper.setAcceleration(1000 * steps_per_mm); // 2000mm/s^2
@@ -132,11 +149,30 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     {
       stepper.disableOutputs();
     }
+    usleep(1000000);
     last_set_position = 0;
     stepper.enableOutputs();
-    stepper.setSpeed(stepperStruct.speed * steps_per_mm);
+
+    // counterclockwise
+    // stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
+    // stepper.move(1000 * steps_per_mm);
+
+    // counterclockwise
+    // stepper.setSpeed(stepperStruct.speed * steps_per_mm);
+    // stepper.move(1000 * steps_per_mm);
+
+    // counterclockwise
+    // stepper.setSpeed(stepperStruct.speed * steps_per_mm);
+    // stepper.move(-1000 * steps_per_mm);
+
+    // counterclockwise
+    // stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
+    // stepper.move(-1000 * steps_per_mm);
+
+    stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
     stepper.move(1000 * steps_per_mm);
-    homingTimeout = millis() + 15000;
+
+    homingTimeout = millis() + 1500000;
     Serial.println("Start homing stepper");
 
     while (io.myDigitalRead(END_STOP_PIN) == HIGH)
@@ -147,6 +183,8 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
         break;
       }
       stepper.runSpeed();
+
+      Serial.println(digitalRead(DIR_PIN));
     }
     stepper.setCurrentPosition(0);
     stepper_info.homing_sequences_done++;

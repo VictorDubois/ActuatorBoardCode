@@ -83,6 +83,18 @@ void setup()
   digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
   Serial.begin(115200);
 
+  pinMode(DIR_PIN, OUTPUT);
+  pinMode(DIR_PIN_U3, OUTPUT);
+  while (true)
+  {
+    digitalWrite(DIR_PIN, HIGH);
+    digitalWrite(DIR_PIN_U3, HIGH);
+    delay(100);
+    digitalWrite(DIR_PIN, LOW);
+    digitalWrite(DIR_PIN_U3, LOW);
+    delay(100);
+  }
+
   /*while (!Serial)
   {
     ; // wait for serial port to connect. Needed for native USB port only
@@ -336,6 +348,9 @@ void setup()
   stepperStructHoming.mode = stepper_mode::HOMING;
   // stepperStructHoming.mode = stepper_mode::POSITION;
   loopStepper(stepperStructHoming, io);
+
+  Serial.println("Homing done");
+  Serial.flush();
 
   // Do not move
   stepperStruct.mode = stepper_mode::POSITION;
