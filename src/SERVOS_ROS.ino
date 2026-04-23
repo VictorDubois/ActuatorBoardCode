@@ -83,9 +83,11 @@ void setup()
   digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
   Serial.begin(115200);
 
+
+
   pinMode(DIR_PIN, OUTPUT);
   pinMode(DIR_PIN_U3, OUTPUT);
-  while (true)
+  while (false)
   {
     digitalWrite(DIR_PIN, HIGH);
     digitalWrite(DIR_PIN_U3, HIGH);
@@ -180,6 +182,23 @@ void setup()
 
   Serial.println("io pinmode done");
 
+
+   while (false)
+  {
+    Serial.println("Test transistors");
+    io.myDigitalWrite(TRANSISTOR_1_PIN, HIGH);
+    io.myDigitalWrite(TRANSISTOR_2_PIN, HIGH);
+    io.myDigitalWrite(TRANSISTOR_3_PIN, HIGH);
+    io.myDigitalWrite(TRANSISTOR_4_PIN, HIGH);
+    delay(5000);
+    io.myDigitalWrite(TRANSISTOR_1_PIN, LOW);
+    io.myDigitalWrite(TRANSISTOR_2_PIN, LOW); 
+    io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
+    io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
+    delay(1000);
+      
+  }
+
   setupOled();
 
   if (false)
@@ -203,13 +222,13 @@ void setup()
   }
 
   int servoIndex = 0;
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, SERVO_1_msg.angle_s1, 100, 0.95, 0, 180);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, SERVO_1_msg.angle_s1, 100, 0.95, 0, 180);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, SERVO_1_msg.angle_s1, 100, 0.95, 0, 180);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, SERVO_1_msg.angle_s1, 100, 0.95, 0, 180);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5, 175, 100, 0.8, 100, 175);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6, 100, 100, 0.8, 112, 175);
-  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7, 100, 100, 0.8, 110, 175);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, SERVO_1_msg.angle_s1, 100, 0.1, 0, 180);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_2, SERVO_1_msg.angle_s1, 100, 0.1, 0, 180);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_3, SERVO_1_msg.angle_s1, 100, 0.1, 0, 180);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_4, SERVO_1_msg.angle_s1, 100, 0.1, 0, 180);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_5, 175, 1, 1, 100, 175);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_6, 100, 255, 0, 112, 175);
+  myPersistentServos[servoIndex++] = new PersistentServo(SERVO_7, 100, 255, 1, 110, 175);
   // myPersistentServos[servoIndex++] = new PersistentServo(SERVO_8); // Clicou instead
   digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
 
@@ -228,8 +247,8 @@ void setup()
       myPersistentServos[2]->angle = 0;   // 0 = endroit milieu gauche
       myPersistentServos[3]->angle = 0;   // 0 = endroit tout à gauche
       myPersistentServos[4]->angle = 175; // 175 = doigt en bas
-      myPersistentServos[5]->angle = 175;
-      myPersistentServos[6]->angle = 175;
+      myPersistentServos[5]->angle = 150;
+      myPersistentServos[6]->angle = 150;
       // myPersistentServos[7]->angle = 128;
 
       for (int l_i = 0; l_i < 100; l_i++)
@@ -243,9 +262,9 @@ void setup()
       myPersistentServos[1]->angle = 180; // 180 = autre sens milieu droite
       myPersistentServos[2]->angle = 180; // 180 = autre sens milieu gauche
       myPersistentServos[3]->angle = 180; // 180 = autre sens tout à gauche
-      myPersistentServos[4]->angle = 115; // 110 doigt à l'horizontale
-      myPersistentServos[5]->angle = 112;
-      myPersistentServos[6]->angle = 110;
+      myPersistentServos[4]->angle = 125; // 110 doigt à l'horizontale
+      myPersistentServos[5]->angle = 125;
+      myPersistentServos[6]->angle = 125;
       // myPersistentServos[7]->angle = 128;
 
       // full droite 125 attrape 208 relache (testeur)

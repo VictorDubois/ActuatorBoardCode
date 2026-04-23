@@ -84,7 +84,7 @@ void setupDynamixel()
         usleep(20000);
 
         Serial.print("getModelNumberFromTable: ");
-        Serial.println(dxl.getModelNumberFromTable(id));
+        //Serial.println(dxl.getModelNumberFromTable(id));
         if (dxl.ping())
         {
             usleep(20000);

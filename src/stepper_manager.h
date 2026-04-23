@@ -23,7 +23,7 @@
 */
 
 // Stepper U4
-#define DIR_PIN 16 // Direction
+#define DIR_PIN 6 // Direction&
 #define STEP_PIN 8 // Step
 #define SW_RX 2    // TMC2208/TMC2224 SoftwareSerial receive pin
 #define SW_TX 15   // TMC2208/TMC2224 SoftwareSerial transmit pin (actually pin 42, but also plugged to SERVO7)
@@ -90,6 +90,7 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     driver.rms_current(stepperStruct.current * to_mA_accel);
     Serial.println(driver.rms_current());*/
   }
+  uint8_t homingCount = 0;
   bool stillWorkToDo = true;
   switch (stepperStruct.mode)
   {
@@ -175,8 +176,13 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     homingTimeout = millis() + 1500000;
     Serial.println("Start homing stepper");
 
-    while (io.myDigitalRead(END_STOP_PIN) == HIGH)
+    while (homingCount < 10 )
     {
+      if (io.myDigitalRead(END_STOP_PIN) == HIGH)
+        homingCount++;
+      else
+        homingCount = 0;
+
       if (millis() > homingTimeout)
       {
         Serial.println("Failed to home stepper: timeout reached");
@@ -184,7 +190,7 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
       }
       stepper.runSpeed();
 
-      Serial.println(digitalRead(DIR_PIN));
+      //Serial.println(digitalRead(DIR_PIN));
     }
     stepper.setCurrentPosition(0);
     stepper_info.homing_sequences_done++;
