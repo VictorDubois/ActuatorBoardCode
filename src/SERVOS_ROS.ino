@@ -590,6 +590,7 @@ void loop()
         updateServos(myPersistentServos);
         updateDynamixels();
       }
+      updateDynamixelsInfo();
     }
     // delay(5);
   }
