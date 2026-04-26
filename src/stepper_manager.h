@@ -8,25 +8,26 @@
 #include <io_expender_manager.h>
 #include "CanStruct/can_structs.h"
 
-#define END_STOP_PIN 103 // =Servo8
+#define END_STOP_PIN 43 // 103 // =Servo8
 
 #define EN_PIN 5 // Enable
 
+// Stepper U3
 #define DIR_PIN_U3 12  // Direction
 #define STEP_PIN_U3 11 // Step
-/*
-// Stepper U3
-#define DIR_PIN 12  // Direction
-#define STEP_PIN 11 // Step
-#define SW_RX 2     // TMC2208/TMC2224 SoftwareSerial receive pin
-#define SW_TX 38    // TMC2208/TMC2224 SoftwareSerial transmit pin
-*/
+#define SW_RX_U3 2     // TMC2208/TMC2224 SoftwareSerial receive pin
+#define SW_TX_U3 38    // TMC2208/TMC2224 SoftwareSerial transmit pin
 
 // Stepper U4
-#define DIR_PIN 6 // Direction&
-#define STEP_PIN 8 // Step
-#define SW_RX 2    // TMC2208/TMC2224 SoftwareSerial receive pin
-#define SW_TX 15   // TMC2208/TMC2224 SoftwareSerial transmit pin (actually pin 42, but also plugged to SERVO7)
+#define DIR_PIN_U4 6  // Direction&
+#define STEP_PIN_U4 8 // Step
+#define SW_RX_U4 2    // TMC2208/TMC2224 SoftwareSerial receive pin
+#define SW_TX_U4 15   // TMC2208/TMC2224 SoftwareSerial transmit pin (actually pin 42, but also plugged to SERVO7)
+
+#define DIR_PIN DIR_PIN_U3   // Direction
+#define STEP_PIN STEP_PIN_U3 // Step
+#define SW_RX SW_RX_U3       // TMC2208/TMC2224 SoftwareSerial receive pin
+#define SW_TX SW_TX_U3       // TMC2208/TMC2224 SoftwareSerial transmit pin
 
 #define SERIAL_PORT Serial1 // TMC2208/TMC2224 HardwareSerial port
 
@@ -176,7 +177,7 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     homingTimeout = millis() + 1500000;
     Serial.println("Start homing stepper");
 
-    while (homingCount < 10 )
+    while (homingCount < 10)
     {
       if (io.myDigitalRead(END_STOP_PIN) == HIGH)
         homingCount++;
@@ -190,7 +191,7 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
       }
       stepper.runSpeed();
 
-      //Serial.println(digitalRead(DIR_PIN));
+      // Serial.println(digitalRead(DIR_PIN));
     }
     stepper.setCurrentPosition(0);
     stepper_info.homing_sequences_done++;
