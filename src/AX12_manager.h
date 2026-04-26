@@ -9,7 +9,7 @@
 #define DYNAMIXEL_SERIAL Serial2 // change as you want
 #define DYNAMIXEL_SERIAL_TX_pin 17
 #define DYNAMIXEL_SERIAL_RX_pin 18
-#define NB_AX12 3
+#define NB_AX12 4
 #define AX12_A_MODEL_ID 12
 const uint8_t PIN_RTS = 21;
 const uint32_t DYNAMIXEL_BAUDRATE = 1000000;
@@ -58,7 +58,7 @@ struct AX12
     }
 };
 
-AX12 myAX12s[NB_AX12 + 3] = {AX12(8), AX12(7), AX12(5), AX12(20), AX12(21), AX12(22)};
+AX12 myAX12s[NB_AX12 + 2] = {AX12(3), AX12(4), AX12(7), AX12(20), AX12(21), AX12(22)};
 
 void setupDynamixel()
 {
@@ -80,12 +80,12 @@ void setupDynamixel()
     {
         auto id = myAX12s[i].id;
 
-        dxl.setModelNumber(id, AX12_A_MODEL_ID);
+        // dxl.setModelNumber(id, AX12_A_MODEL_ID);
         usleep(20000);
 
         Serial.print("getModelNumberFromTable: ");
-        //Serial.println(dxl.getModelNumberFromTable(id));
-        if (dxl.ping())
+        Serial.println(dxl.getModelNumberFromTable(id));
+        if (dxl.ping(id))
         {
             usleep(20000);
 
@@ -168,23 +168,67 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     {
         // dxl.setTemperatureLimit(ax12_id, a_ax12_msg.temperatureLimit);
     }
-
-    if (a_ax12_msg.currentLimit != -1)
-    {
-        dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
-    }
 }
 
 void updateDynamixelInfo(CAN::AX12Read &a_ax12_msg, uint8_t ax12_id)
 {
     // a_ax12_msg.mode == // by default, they are all in position mode
+    usleep(10000);
+    float l_position = dxl.getPresentPosition(ax12_id, UNIT_RAW);
+    Serial.println(l_position);
+    a_ax12_msg.current_position = static_cast<uint16_t>(l_position);
+    if (dxl.getLastLibErrCode() != 0)
+    {
+        Serial.print("Error getting position for AX12 ID ");
+        Serial.print(ax12_id);
+        Serial.print(": ");
+        Serial.println(dxl.getLastLibErrCode());
+    }
 
-    a_ax12_msg.current_position = dxl.getPresentPosition(ax12_id);
-    a_ax12_msg.presentCurrent = dxl.getPresentCurrent(ax12_id);
+    usleep(10000);
+
+    l_position = dxl.getPresentPosition(ax12_id, UNIT_RAW);
+    Serial.println(l_position);
+    a_ax12_msg.current_position = static_cast<uint16_t>(l_position);
+    if (dxl.getLastLibErrCode() != 0)
+    {
+        Serial.print("Error getting position for AX12 ID ");
+        Serial.print(ax12_id);
+        Serial.print(": ");
+        Serial.println(dxl.getLastLibErrCode());
+    }
+
+    usleep(10000);
+
+    a_ax12_msg.presentCurrent = -1;
+    // dxl.getPresentCurrent(ax12_id); // Not supported by AX12
     a_ax12_msg.presentTemperature = -1; // dxl.getPresentTemperature(ax12_id);
     a_ax12_msg.hardwareErrorStatus = 0; // dxl.hardwareErrorStatus(ax12_id);
-    a_ax12_msg.moving = dxl.getPresentVelocity(ax12_id);
+    float l_velocity = dxl.getPresentVelocity(ax12_id, UNIT_RAW);
+    Serial.println(l_velocity);
+    a_ax12_msg.moving = static_cast<uint8_t>(l_velocity / 10);
+    if (dxl.getLastLibErrCode() != 0)
+    {
+        Serial.print("Error getting velocity for AX12 ID ");
+        Serial.print(ax12_id);
+        Serial.print(": ");
+        Serial.println(dxl.getLastLibErrCode());
+    }
+    usleep(10000);
+
+    l_velocity = dxl.getPresentVelocity(ax12_id, UNIT_RAW);
+    Serial.println(l_velocity);
+    a_ax12_msg.moving = static_cast<uint8_t>(l_velocity / 10);
+    if (dxl.getLastLibErrCode() != 0)
+    {
+        Serial.print("Error getting velocity for AX12 ID ");
+        Serial.print(ax12_id);
+        Serial.print(": ");
+        Serial.println(dxl.getLastLibErrCode());
+    }
+
     a_ax12_msg.mode = 1; // dxl.mode(ax12_id);
+    usleep(10000);
 }
 
 void updateDynamixels()

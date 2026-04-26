@@ -83,8 +83,6 @@ void setup()
   digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
   Serial.begin(115200);
 
-
-
   pinMode(DIR_PIN, OUTPUT);
   pinMode(DIR_PIN_U3, OUTPUT);
   while (false)
@@ -182,8 +180,7 @@ void setup()
 
   Serial.println("io pinmode done");
 
-
-   while (false)
+  while (false)
   {
     Serial.println("Test transistors");
     io.myDigitalWrite(TRANSISTOR_1_PIN, HIGH);
@@ -192,23 +189,26 @@ void setup()
     io.myDigitalWrite(TRANSISTOR_4_PIN, HIGH);
     delay(5000);
     io.myDigitalWrite(TRANSISTOR_1_PIN, LOW);
-    io.myDigitalWrite(TRANSISTOR_2_PIN, LOW); 
+    io.myDigitalWrite(TRANSISTOR_2_PIN, LOW);
     io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
     io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
     delay(1000);
-      
   }
 
   setupOled();
 
-  if (false)
+  if (true)
   {
-    int AX12_ID = 8;
+    int AX12_ID = 7;
+    usleep(3e6);
     setupDynamixel();
+
+    uint8_t positionServo = 0;
 
     // Test dynamixel
     while (true)
     {
+      positionServo += 10;
       dxl.ledOn(AX12_ID);
       Serial.println("AX12 LED on");
       Serial.flush();
@@ -218,6 +218,43 @@ void setup()
       Serial.println("AX12 LED off");
       Serial.flush();
       delay(1000);
+
+      Serial.print("getModelNumberFromTable: ");
+      Serial.println(dxl.getModelNumberFromTable(AX12_ID));
+
+      for (int i = 0; i < NB_AX12; i++)
+      {
+        updateDynamixelInfo(myAX12s[i].infos, myAX12s[i].id);
+
+        Serial.print("dxl.getLastLibErrCode() = ");
+        Serial.println(dxl.getLastLibErrCode());
+
+        Serial.print("AX12 ID: ");
+        Serial.print(myAX12s[i].id);
+        Serial.print(", position: ");
+        Serial.print(myAX12s[i].infos.current_position);
+        Serial.print(", current: ");
+        Serial.print(myAX12s[i].infos.presentCurrent);
+        Serial.print(", temperature: ");
+        Serial.print(myAX12s[i].infos.presentTemperature);
+        Serial.print(", hardwareErrorStatus: ");
+        Serial.print(myAX12s[i].infos.hardwareErrorStatus);
+        Serial.print(", moving: ");
+        Serial.print(myAX12s[i].infos.moving);
+        Serial.print(", mode: ");
+        Serial.print(myAX12s[i].infos.mode);
+        Serial.println();
+
+        myAX12s[i].commands.position = positionServo + 100 + 20 * i;
+        myAX12s[i].commands.currentLimit = 100;
+        myAX12s[i].commands.max_accel = 100;
+        myAX12s[i].commands.max_speed = 100;
+        myAX12s[i].commands.torque_enable = 1;
+        updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
+
+        usleep(1e6);
+      }
+      Serial.println();
     }
   }
 
