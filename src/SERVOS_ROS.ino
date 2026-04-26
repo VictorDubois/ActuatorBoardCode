@@ -197,7 +197,7 @@ void setup()
 
   setupOled();
 
-  if (true)
+  if (false)
   {
     int AX12_ID = 7;
     usleep(3e6);
@@ -396,6 +396,8 @@ void setup()
   }
 
   // Homing
+  Serial.println("Start homing");
+
   Stepper stepperStructHoming;
   stepperStructHoming.current = 200; //*50mA
   stepperStructHoming.accel = 100;   // mm/s2
