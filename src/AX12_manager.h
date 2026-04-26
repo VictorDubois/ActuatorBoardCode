@@ -175,20 +175,9 @@ void updateDynamixelInfo(CAN::AX12Read &a_ax12_msg, uint8_t ax12_id)
     // a_ax12_msg.mode == // by default, they are all in position mode
     usleep(10000);
     float l_position = dxl.getPresentPosition(ax12_id, UNIT_RAW);
-    Serial.println(l_position);
     a_ax12_msg.current_position = static_cast<uint16_t>(l_position);
-    if (dxl.getLastLibErrCode() != 0)
-    {
-        Serial.print("Error getting position for AX12 ID ");
-        Serial.print(ax12_id);
-        Serial.print(": ");
-        Serial.println(dxl.getLastLibErrCode());
-    }
-
     usleep(10000);
-
-    l_position = dxl.getPresentPosition(ax12_id, UNIT_RAW);
-    Serial.println(l_position);
+    l_position = dxl.getPresentPosition(ax12_id, UNIT_RAW); // Second read because the first one is often wrong for some reason
     a_ax12_msg.current_position = static_cast<uint16_t>(l_position);
     if (dxl.getLastLibErrCode() != 0)
     {
@@ -205,19 +194,9 @@ void updateDynamixelInfo(CAN::AX12Read &a_ax12_msg, uint8_t ax12_id)
     a_ax12_msg.presentTemperature = -1; // dxl.getPresentTemperature(ax12_id);
     a_ax12_msg.hardwareErrorStatus = 0; // dxl.hardwareErrorStatus(ax12_id);
     float l_velocity = dxl.getPresentVelocity(ax12_id, UNIT_RAW);
-    Serial.println(l_velocity);
     a_ax12_msg.moving = static_cast<uint8_t>(l_velocity / 10);
-    if (dxl.getLastLibErrCode() != 0)
-    {
-        Serial.print("Error getting velocity for AX12 ID ");
-        Serial.print(ax12_id);
-        Serial.print(": ");
-        Serial.println(dxl.getLastLibErrCode());
-    }
     usleep(10000);
-
-    l_velocity = dxl.getPresentVelocity(ax12_id, UNIT_RAW);
-    Serial.println(l_velocity);
+    l_velocity = dxl.getPresentVelocity(ax12_id, UNIT_RAW); // Second read because the first one is often wrong for some reason
     a_ax12_msg.moving = static_cast<uint8_t>(l_velocity / 10);
     if (dxl.getLastLibErrCode() != 0)
     {
