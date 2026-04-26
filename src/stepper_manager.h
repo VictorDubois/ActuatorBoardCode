@@ -91,7 +91,6 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     driver.rms_current(stepperStruct.current * to_mA_accel);
     Serial.println(driver.rms_current());*/
   }
-  uint8_t homingCount = 0;
   bool stillWorkToDo = true;
   switch (stepperStruct.mode)
   {
@@ -155,43 +154,20 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     last_set_position = 0;
     stepper.enableOutputs();
 
-    // counterclockwise
-    // stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
-    // stepper.move(1000 * steps_per_mm);
-
-    // counterclockwise
-    // stepper.setSpeed(stepperStruct.speed * steps_per_mm);
-    // stepper.move(1000 * steps_per_mm);
-
-    // counterclockwise
-    // stepper.setSpeed(stepperStruct.speed * steps_per_mm);
-    // stepper.move(-1000 * steps_per_mm);
-
-    // counterclockwise
-    // stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
-    // stepper.move(-1000 * steps_per_mm);
-
     stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
     stepper.move(1000 * steps_per_mm);
 
     homingTimeout = millis() + 1500000;
     Serial.println("Start homing stepper");
 
-    while (homingCount < 10)
+    while (io.myDigitalRead(END_STOP_PIN) == HIGH)
     {
-      if (io.myDigitalRead(END_STOP_PIN) == HIGH)
-        homingCount++;
-      else
-        homingCount = 0;
-
       if (millis() > homingTimeout)
       {
         Serial.println("Failed to home stepper: timeout reached");
         break;
       }
       stepper.runSpeed();
-
-      // Serial.println(digitalRead(DIR_PIN));
     }
     stepper.setCurrentPosition(0);
     stepper_info.homing_sequences_done++;
