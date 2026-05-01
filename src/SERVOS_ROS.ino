@@ -166,7 +166,7 @@ void setup()
   io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
   io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
 
-  SERVO_1_msg.angle_s1 = 0;
+  SERVO_1_msg.angle_s1 = 30;
   SERVO_1_msg.angle_s2 = 0;
   SERVO_1_msg.angle_s3 = 0;
   SERVO_1_msg.angle_s4 = 0;
@@ -413,6 +413,71 @@ void setup()
   // Do not move
   stepperStruct.mode = stepper_mode::POSITION;
   stepperStruct.position = 0;
+
+  if (true) // reset the claws
+  {
+    // Init AX12 positions to closed
+    Serial.println("Init AX12 positions to closed");
+    {
+      // while (true)
+      {
+        for (int i = 0; i < NB_AX12; i++)
+        {
+          myAX12s[i].commands.position = 0;
+          myAX12s[i].commands.currentLimit = 100;
+          myAX12s[i].commands.max_accel = 100;
+          myAX12s[i].commands.max_speed = 100;
+          myAX12s[i].commands.torque_enable = 1;
+
+          updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
+
+          dxl.ledOn(myAX12s[i].id);
+          Serial.print("AX12 ID: ");
+          Serial.println(myAX12s[i].id);
+
+          delay(1000);
+          dxl.ledOff(myAX12s[i].id);
+        }
+      }
+      delay(2000);
+    }
+
+    Serial.println("Turn the servos to the default position");
+
+    // Init servos to default position
+    {
+      digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
+
+      myPersistentServos[0]->angle = 30;  // 0 = endroit tout à droite
+      myPersistentServos[1]->angle = 0;   // 0 = endroit milieu droite
+      myPersistentServos[2]->angle = 0;   // 0 = endroit milieu gauche
+      myPersistentServos[3]->angle = 0;   // 0 = endroit tout à gauche
+      myPersistentServos[4]->angle = 175; // 175 = doigt en bas
+      myPersistentServos[5]->angle = 150;
+      myPersistentServos[6]->angle = 150;
+
+      for (int l_i = 0; l_i < 100; l_i++)
+      {
+        updateServos(myPersistentServos);
+        delay(30);
+      }
+    }
+
+    Serial.println("close AX12s");
+    // Init AX12 positions to open
+    {
+      for (int i = 0; i < NB_AX12; i++)
+      {
+        myAX12s[i].commands.position = 600;
+        myAX12s[i].commands.currentLimit = 50;
+        myAX12s[i].commands.max_accel = 100;
+        myAX12s[i].commands.max_speed = 100;
+        myAX12s[i].commands.torque_enable = 1;
+        updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
+      }
+    }
+    Serial.println("Grabbers init done");
+  }
 
   // Test pumps
   while (false)
