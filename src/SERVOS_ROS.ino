@@ -10,6 +10,11 @@ using namespace CAN;
 #include "stepper_manager.h"
 #include "AX12_manager.h"
 
+#include "constants.h"
+
+#include "billig.h"
+#include "devices_checks.h"
+
 ServoMessage SERVO_1_msg;
 ServoMessage SERVO_2_msg;
 Stepper stepperStruct;
@@ -29,40 +34,6 @@ uint32_t endOfMatch;
 int8_t teamIsBlue = -1;
 int8_t remaining_time_s = 127;
 uint32_t timestamp_start_match = 0;
-
-#define STEPPER_POWER_ENABLE_PIN 5
-#define SERVO_POWER_ENABLE_PIN 44
-#define TRANSISTOR_1_PIN 104
-#define TRANSISTOR_2_PIN 9
-#define TRANSISTOR_3_PIN 105
-#define TRANSISTOR_4_PIN 7
-#define BAT_POWER_PIN 1
-#define PRESSURE_1_PIN 4
-#define PRESSURE_2_PIN 2
-#define BAT_ELEC_PIN PRESSURE_1_PIN
-#define TIRETTE_PAMI_PIN 100
-#define TEAM_COLOR_PAMI_PIN 101
-#define CAN_DETECT_0 100
-#define CAN_DETECT_1 101
-#define CAN_DETECT_2 102
-#define CAN_DETECT_3 103
-
-#define I2C_EXTRA_1 106
-#define I2C_EXTRA_2 107
-
-#define SERVO_1 35
-#define SERVO_2 36
-#define SERVO_3 37
-#define SERVO_4 39
-#define SERVO_5 40
-#define SERVO_6 41
-#define SERVO_7 42
-#define SERVO_8 43
-
-#define CLICOU_HOMING_PIN END_STOP_PIN // 43
-
-#define I2C_SDA 13
-#define I2C_SCL 14
 
 void initI2C()
 {
@@ -180,83 +151,11 @@ void setup()
 
   Serial.println("io pinmode done");
 
-  while (false)
-  {
-    Serial.println("Test transistors");
-    io.myDigitalWrite(TRANSISTOR_1_PIN, HIGH);
-    io.myDigitalWrite(TRANSISTOR_2_PIN, HIGH);
-    io.myDigitalWrite(TRANSISTOR_3_PIN, HIGH);
-    io.myDigitalWrite(TRANSISTOR_4_PIN, HIGH);
-    delay(5000);
-    io.myDigitalWrite(TRANSISTOR_1_PIN, LOW);
-    io.myDigitalWrite(TRANSISTOR_2_PIN, LOW);
-    io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
-    io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
-    delay(1000);
-  }
+  testTransistors(false, io);
 
   setupOled();
 
-  if (false)
-  {
-    int AX12_ID = 7;
-    usleep(3e6);
-    setupDynamixel();
-
-    uint8_t positionServo = 0;
-
-    // Test dynamixel
-    while (true)
-    {
-      positionServo += 10;
-      dxl.ledOn(AX12_ID);
-      Serial.println("AX12 LED on");
-      Serial.flush();
-      delay(1000);
-
-      dxl.ledOff(AX12_ID);
-      Serial.println("AX12 LED off");
-      Serial.flush();
-      delay(1000);
-
-      Serial.print("getModelNumberFromTable: ");
-      Serial.println(dxl.getModelNumberFromTable(AX12_ID));
-
-      for (int i = 0; i < NB_AX12; i++)
-      {
-        updateDynamixelInfo(myAX12s[i].infos, myAX12s[i].id);
-
-        Serial.print("dxl.getLastLibErrCode() = ");
-        Serial.println(dxl.getLastLibErrCode());
-
-        Serial.print("AX12 ID: ");
-        Serial.print(myAX12s[i].id);
-        Serial.print(", position: ");
-        Serial.print(myAX12s[i].infos.current_position);
-        Serial.print(", current: ");
-        Serial.print(myAX12s[i].infos.presentCurrent);
-        Serial.print(", temperature: ");
-        Serial.print(myAX12s[i].infos.presentTemperature);
-        Serial.print(", hardwareErrorStatus: ");
-        Serial.print(myAX12s[i].infos.hardwareErrorStatus);
-        Serial.print(", moving: ");
-        Serial.print(myAX12s[i].infos.moving);
-        Serial.print(", mode: ");
-        Serial.print(myAX12s[i].infos.mode);
-        Serial.println();
-
-        myAX12s[i].commands.position = positionServo + 100 + 20 * i;
-        myAX12s[i].commands.currentLimit = 100;
-        myAX12s[i].commands.max_accel = 100;
-        myAX12s[i].commands.max_speed = 100;
-        myAX12s[i].commands.torque_enable = 1;
-        updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
-
-        usleep(1e6);
-      }
-      Serial.println();
-    }
-  }
+  testDynamixels(false);
 
   int servoIndex = 0;
   myPersistentServos[servoIndex++] = new PersistentServo(SERVO_1, SERVO_1_msg.angle_s1, 100, 0.1, 0, 180);
@@ -269,54 +168,8 @@ void setup()
   // myPersistentServos[servoIndex++] = new PersistentServo(SERVO_8); // Clicou instead
   digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
 
-  // test servos
-  if (false)
-  {
-    digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
+  // testServos(myPersistentServos);
 
-    // myPersistentServos[7]->speed = 128;
-
-    while (true)
-    {
-      Serial.println("128");
-      myPersistentServos[0]->angle = 0;   // 0 = endroit tout à droite
-      myPersistentServos[1]->angle = 0;   // 0 = endroit milieu droite
-      myPersistentServos[2]->angle = 0;   // 0 = endroit milieu gauche
-      myPersistentServos[3]->angle = 0;   // 0 = endroit tout à gauche
-      myPersistentServos[4]->angle = 175; // 175 = doigt en bas
-      myPersistentServos[5]->angle = 150;
-      myPersistentServos[6]->angle = 150;
-      // myPersistentServos[7]->angle = 128;
-
-      for (int l_i = 0; l_i < 100; l_i++)
-      {
-        updateServos(myPersistentServos);
-        delay(30);
-      }
-
-      Serial.println("70");
-      myPersistentServos[0]->angle = 180; // 180 = autre sens tout à droite
-      myPersistentServos[1]->angle = 180; // 180 = autre sens milieu droite
-      myPersistentServos[2]->angle = 180; // 180 = autre sens milieu gauche
-      myPersistentServos[3]->angle = 180; // 180 = autre sens tout à gauche
-      myPersistentServos[4]->angle = 125; // 110 doigt à l'horizontale
-      myPersistentServos[5]->angle = 125;
-      myPersistentServos[6]->angle = 125;
-      // myPersistentServos[7]->angle = 128;
-
-      // full droite 125 attrape 208 relache (testeur)
-      // milieu droite 107 attrape 198 relache (testeur)
-      // milieu gauche 125 attrape 210 relache (testeur)
-      // full gauche 115 attrape 205 relache (testeur)
-      // doigt bas 230 haut 168 (testeur)
-
-      for (int l_i = 0; l_i < 100; l_i++)
-      {
-        updateServos(myPersistentServos);
-        delay(30);
-      }
-    }
-  }
   delay(15);
   Serial.println("Init AccelStep");
   setupAccelStep(io);
@@ -414,139 +267,13 @@ void setup()
   stepperStruct.mode = stepper_mode::POSITION;
   stepperStruct.position = 0;
 
-  if (true) // reset the claws
-  {
-    // Init AX12 positions to closed
-    Serial.println("Init AX12 positions to closed");
-    {
-      // while (true)
-      {
-        for (int i = 0; i < NB_AX12; i++)
-        {
-          myAX12s[i].commands.position = 0;
-          myAX12s[i].commands.currentLimit = 100;
-          myAX12s[i].commands.max_accel = 100;
-          myAX12s[i].commands.max_speed = 100;
-          myAX12s[i].commands.torque_enable = 1;
+  initBillig(myPersistentServos);
 
-          updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
+  testPumps(false, io);
 
-          dxl.ledOn(myAX12s[i].id);
-          Serial.print("AX12 ID: ");
-          Serial.println(myAX12s[i].id);
+  testStepper(false, stepperStruct, io);
 
-          delay(1000);
-          dxl.ledOff(myAX12s[i].id);
-        }
-      }
-      delay(2000);
-    }
-
-    Serial.println("Turn the servos to the default position");
-
-    // Init servos to default position
-    {
-      digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
-
-      myPersistentServos[0]->angle = 30;  // 0 = endroit tout à droite
-      myPersistentServos[1]->angle = 0;   // 0 = endroit milieu droite
-      myPersistentServos[2]->angle = 0;   // 0 = endroit milieu gauche
-      myPersistentServos[3]->angle = 0;   // 0 = endroit tout à gauche
-      myPersistentServos[4]->angle = 175; // 175 = doigt en bas
-      myPersistentServos[5]->angle = 150;
-      myPersistentServos[6]->angle = 150;
-
-      for (int l_i = 0; l_i < 100; l_i++)
-      {
-        updateServos(myPersistentServos);
-        delay(30);
-      }
-    }
-
-    Serial.println("close AX12s");
-    // Init AX12 positions to open
-    {
-      for (int i = 0; i < NB_AX12; i++)
-      {
-        myAX12s[i].commands.position = 600;
-        myAX12s[i].commands.currentLimit = 50;
-        myAX12s[i].commands.max_accel = 100;
-        myAX12s[i].commands.max_speed = 100;
-        myAX12s[i].commands.torque_enable = 1;
-        updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
-      }
-    }
-    Serial.println("Grabbers init done");
-  }
-
-  // Test pumps
-  while (false)
-  {
-    io.myDigitalWrite(TRANSISTOR_1_PIN, HIGH);
-    io.myDigitalWrite(TRANSISTOR_2_PIN, HIGH);
-    io.myDigitalWrite(TRANSISTOR_3_PIN, HIGH);
-    io.myDigitalWrite(TRANSISTOR_4_PIN, HIGH);
-    Serial.println("HIGH");
-
-    delay(1000);
-
-    io.myDigitalWrite(TRANSISTOR_1_PIN, LOW);
-    io.myDigitalWrite(TRANSISTOR_2_PIN, LOW);
-    io.myDigitalWrite(TRANSISTOR_3_PIN, LOW);
-    io.myDigitalWrite(TRANSISTOR_4_PIN, LOW);
-    Serial.println("LOW");
-
-    delay(2000);
-  }
-
-  // Test stepper
-  if (false)
-  {
-    stepperStructHoming.mode = stepper_mode::POSITION;
-
-    while (true)
-    {
-      stepperStructHoming.position = 2; // mm 235 mm
-
-      if ((millis() / 5000) % 2)
-      {
-        stepperStructHoming.position = 10; // mm 252.5 mm
-        Serial.println(100);
-      }
-      else
-      {
-        Serial.println(0);
-      }
-      loopStepper(stepperStructHoming, io);
-    }
-  }
-
-  // Test Oled
-  while (false)
-  {
-    uint16_t bat_power_voltage_int = analogRead(BAT_POWER_PIN);
-    uint16_t bat_elec_voltage_int = analogRead(BAT_ELEC_PIN);
-    float bat_power_voltage = bat_power_voltage_int * 6.935283019 * 3300.0f / 4096.0f; // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
-    float bat_elec_voltage = bat_elec_voltage_int * 7.3514 * 3300.0f / 4096.0f;        // ( (R1+R2)/R1 ) * ( max_ADC_Volt / max_ADC_value )
-
-    Serial.print("Power: ");
-    Serial.print(bat_power_voltage_int);
-    Serial.print(", ");
-    Serial.println(bat_power_voltage);
-    Serial.print(", ");
-    Serial.println(batt_to_str(bat_power_voltage));
-
-    Serial.print("Elec: ");
-    Serial.print(bat_elec_voltage_int);
-    Serial.print(", ");
-    Serial.println(bat_elec_voltage);
-    Serial.print(", ");
-    Serial.println(batt_to_str(bat_elec_voltage));
-
-    // drawLCD(current_score);
-    // current_score = (millis()/100)%256;
-    loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
-  }
+  testOled(false, current_score, remaining_time_s, teamIsBlue);
 }
 
 uint8_t digital_io_read;
@@ -556,6 +283,7 @@ int8_t vacuum_1_enable_pump = 0;
 int8_t vacuum_1_release = 0;
 int8_t vacuum_2_enable_pump = 0;
 int8_t vacuum_2_release = 0;
+
 void loop()
 {
   uint32_t timings[32];

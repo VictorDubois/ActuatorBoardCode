@@ -18,6 +18,8 @@
  included in any redistribution.
  **************************************************************************/
 
+#pragma once
+
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>

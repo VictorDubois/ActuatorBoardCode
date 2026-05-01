@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Servo.h> // https://github.com/Dlloydev/ESP32-ESP32S2-AnalogWrite
 #define NB_SERVOS 7
 

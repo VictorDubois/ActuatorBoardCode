@@ -1,0 +1,35 @@
+#pragma once
+
+#define STEPPER_POWER_ENABLE_PIN 5
+#define SERVO_POWER_ENABLE_PIN 44
+#define TRANSISTOR_1_PIN 104
+#define TRANSISTOR_2_PIN 9
+#define TRANSISTOR_3_PIN 105
+#define TRANSISTOR_4_PIN 7
+#define BAT_POWER_PIN 1
+#define PRESSURE_1_PIN 4
+#define PRESSURE_2_PIN 2
+#define BAT_ELEC_PIN PRESSURE_1_PIN
+#define TIRETTE_PAMI_PIN 100
+#define TEAM_COLOR_PAMI_PIN 101
+#define CAN_DETECT_0 100
+#define CAN_DETECT_1 101
+#define CAN_DETECT_2 102
+#define CAN_DETECT_3 103
+
+#define I2C_EXTRA_1 106
+#define I2C_EXTRA_2 107
+
+#define SERVO_1 35
+#define SERVO_2 36
+#define SERVO_3 37
+#define SERVO_4 39
+#define SERVO_5 40
+#define SERVO_6 41
+#define SERVO_7 42
+#define SERVO_8 43
+
+#define CLICOU_HOMING_PIN END_STOP_PIN // 43
+
+#define I2C_SDA 13
+#define I2C_SCL 14
