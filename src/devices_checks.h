@@ -96,6 +96,86 @@ void testDynamixels(bool doTest)
     }
 }
 
+void testDynamixels2(bool doTest)
+{
+    if (!doTest)
+    {
+        return;
+    }
+    int AX12_ID = 8;
+    // dxl.torqueOn(1);
+    while (true)
+    {
+        CAN::AX12Write l_ax12_msg;
+        l_ax12_msg.currentLimit = 100;
+        l_ax12_msg.max_accel = 100;
+        l_ax12_msg.max_speed = 100;
+        l_ax12_msg.temperatureLimit = 65;
+        l_ax12_msg.position = 100;
+        l_ax12_msg.torque_enable = 1;
+
+        for (int i = 0; i < 10; i++)
+        {
+            // myAX12s[0].commands.position(300);
+            l_ax12_msg.torque_enable = 1;
+            l_ax12_msg.position = 300 + 50 * i;
+            l_ax12_msg.currentLimit = 250;
+            l_ax12_msg.max_accel = 250;
+            l_ax12_msg.max_speed = 250;
+            if (i % 2)
+            {
+                dxl.ledOn(AX12_ID);
+            }
+            else
+            {
+                dxl.ledOff(AX12_ID);
+            }
+            // dxl.setGoalPosition(1, l_ax12_msg.position);
+
+            updateDynamixel(l_ax12_msg, AX12_ID);
+            Serial.println(l_ax12_msg.position);
+            Serial.flush();
+
+            delay(1000);
+        }
+    }
+}
+
+void testDynamixels3(bool doTest)
+{
+    if (!doTest)
+    {
+        return;
+    }
+
+    setupDynamixel();
+    dxl.torqueOn(8);
+    usleep(20000);
+
+    while (true)
+    {
+        dxl.ledOn(8);
+        usleep(20000);
+
+        Serial.println("AX12 LED on");
+        Serial.flush();
+        dxl.setGoalPosition(1, 400);
+        usleep(20000);
+
+        delay(1000);
+
+        dxl.ledOff(8);
+        usleep(20000);
+
+        dxl.setGoalPosition(1, 800);
+        usleep(20000);
+
+        Serial.println("AX12 LED off");
+        Serial.flush();
+        delay(1000);
+    }
+}
+
 void testServos(bool doTest, PersistentServo *myPersistentServos[])
 {
     if (!doTest)
@@ -233,5 +313,50 @@ void testOled(bool doTest, int current_score = 0, int remaining_time_s = 90, boo
         // drawLCD(current_score);
         // current_score = (millis()/100)%256;
         loopOled(current_score, remaining_time_s, teamIsBlue, bat_elec_voltage, bat_power_voltage);
+    }
+}
+
+void testIOs(bool doTest, IOPotentiallyExpended io)
+{
+    if (!doTest)
+    {
+        return;
+    }
+
+    while (true)
+    {
+        int digital_io_read = 0;
+        for (int pin_id = 0; pin_id < 4; pin_id++)
+        {
+            digital_io_read |= io.myDigitalRead(100 + pin_id) << pin_id;
+
+            Serial.print(io.myDigitalRead(100 + pin_id));
+        }
+        Serial.println();
+        Serial.println(digital_io_read);
+        Serial.println(io.myDigitalRead(END_STOP_PIN));
+    }
+}
+
+void blinkDynamixels(bool doTest)
+{
+    if (!doTest)
+    {
+        return;
+    }
+
+    if ((millis() / 1000) % 2)
+    {
+        dxl.ledOn(myAX12s[0].id);
+        dxl.ledOn(myAX12s[1].id);
+        dxl.ledOn(myAX12s[2].id);
+        dxl.ledOn(255);
+    }
+    else
+    {
+        dxl.ledOff(myAX12s[0].id);
+        dxl.ledOff(myAX12s[1].id);
+        dxl.ledOff(myAX12s[2].id);
+        dxl.ledOff(255);
     }
 }
