@@ -24,11 +24,11 @@ void initBillig(PersistentServo *myPersistentServos[])
                 Serial.print("AX12 ID: ");
                 Serial.println(myAX12s[i].id);
 
-                delay(1000);
+                delay(100);
                 dxl.ledOff(myAX12s[i].id);
             }
         }
-        delay(2000);
+        // delay(2000);
     }
 
     Serial.println("Turn the servos to the default position");
@@ -57,7 +57,7 @@ void initBillig(PersistentServo *myPersistentServos[])
     {
         for (int i = 0; i < NB_AX12; i++)
         {
-            myAX12s[i].commands.position = 600;
+            myAX12s[i].commands.position = 800;
             myAX12s[i].commands.currentLimit = 50;
             myAX12s[i].commands.max_accel = 100;
             myAX12s[i].commands.max_speed = 100;
