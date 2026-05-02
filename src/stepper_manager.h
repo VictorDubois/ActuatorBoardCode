@@ -146,10 +146,10 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     stepper.runSpeed();
     break;
   case stepper_mode::HOMING:
-    if (homingHasJustBeenDone)
+    /*if (homingHasJustBeenDone)
     {
       stepper.disableOutputs();
-    }
+    }*/
     usleep(1000000);
     last_set_position = 0;
     stepper.enableOutputs();
@@ -172,7 +172,14 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     stepper.setCurrentPosition(0);
     stepper_info.homing_sequences_done++;
     homingHasJustBeenDone = true;
-    stepper.disableOutputs();
+
+    stepper.moveTo(-10 * steps_per_mm);
+    while (stepper.run())
+    {
+    }
+    usleep(100000);
+    stepperStruct.mode = stepper_mode::POSITION;
+    // stepper.disableOutputs();
     break;
   default:
     last_set_position = 0;
