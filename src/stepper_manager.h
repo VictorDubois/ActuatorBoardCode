@@ -173,7 +173,7 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     stepper_info.homing_sequences_done++;
     homingHasJustBeenDone = true;
 
-    stepper.moveTo(-10 * steps_per_mm);
+    stepper.moveTo(-1 * steps_per_mm);
     while (stepper.run())
     {
     }
