@@ -191,9 +191,9 @@ uint8_t digital_io_read;
 uint16_t digital_io_output = 0;
 uint8_t enables;
 int8_t vacuum_1_enable_pump = 0;
-int8_t vacuum_1_release = 0;
 int8_t vacuum_2_enable_pump = 0;
-int8_t vacuum_2_release = 0;
+int8_t vacuum_3_enable_pump = 0;
+int8_t vacuum_4_enable_pump = 0;
 
 void loop()
 {
@@ -223,10 +223,10 @@ void loop()
     io.myDigitalWrite(TRANSISTOR_3_PIN, digital_io_output & (0x1 << 2));
     io.myDigitalWrite(TRANSISTOR_4_PIN, digital_io_output & (0x1 << 3));*/
 
-    io.myDigitalWrite(TRANSISTOR_2_PIN, vacuum_1_release);
-    io.myDigitalWrite(TRANSISTOR_4_PIN, vacuum_1_enable_pump);
-    io.myDigitalWrite(TRANSISTOR_1_PIN, vacuum_2_release);
-    io.myDigitalWrite(TRANSISTOR_3_PIN, vacuum_2_enable_pump);
+    io.myDigitalWrite(TRANSISTOR_2_PIN, vacuum_1_enable_pump);
+    io.myDigitalWrite(TRANSISTOR_1_PIN, vacuum_2_enable_pump);
+    io.myDigitalWrite(TRANSISTOR_4_PIN, vacuum_3_enable_pump);
+    io.myDigitalWrite(TRANSISTOR_3_PIN, vacuum_4_enable_pump);
 
     // io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
 
@@ -236,7 +236,7 @@ void loop()
       loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_power_voltage, bat_elec_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue,
               myAX12s[0].commands, myAX12s[1].commands, myAX12s[2].commands, myAX12s[3].commands, myAX12s[4].commands, myAX12s[5].commands,
               myAX12s[0].infos, myAX12s[1].infos, myAX12s[2].infos, myAX12s[3].infos, myAX12s[4].infos, myAX12s[5].infos,
-              vacuum_1_enable_pump, vacuum_1_release, vacuum_2_enable_pump, vacuum_2_release);
+              vacuum_1_enable_pump, vacuum_2_enable_pump, vacuum_3_enable_pump, vacuum_4_enable_pump);
 
       myPersistentServos[0]->angle = SERVO_1_msg.angle_s1;
       myPersistentServos[0]->speed = SERVO_1_msg.speed_s1;

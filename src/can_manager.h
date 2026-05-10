@@ -97,7 +97,7 @@ static uint32_t gSentFrameCount = 0;
 //----------------------------------------------------------------------------------------
 void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *SERVO_2_msg, Stepper *stepperStruct, const StepperInfo *stepper_info, const uint16_t bat_power_voltage, const uint16_t bat_elec_voltage, uint8_t digital_io_read, uint16_t &a_digital_io_output, uint8_t &a_enables, int8_t &a_remaining_time_s, int8_t &a_is_blue,
              AX12Write &ax12_w1, AX12Write &ax12_w2, AX12Write &ax12_w3, AX12Write &ax12_w4, AX12Write &ax12_w5, AX12Write &ax12_w6, const AX12Read &ax12_r1, const AX12Read &ax12_r2, const AX12Read &ax12_r3, const AX12Read &ax12_r4, const AX12Read &ax12_r5, const AX12Read &ax12_r6,
-             int8_t &vacuum_1_enable_pump, int8_t &vacuum_1_release, int8_t &vacuum_2_enable_pump, int8_t &vacuum_2_release)
+             int8_t &vacuum_1_enable_pump, int8_t &vacuum_2_enable_pump, int8_t &vacuum_3_enable_pump, int8_t &vacuum_4_enable_pump)
 {
   // Serial.print("."); // debug
   pinged = true; // force sending a CAN message
@@ -245,14 +245,15 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     }
     else if (frame.id == can_ids::DIGITAL_OUTPUTS)
     {
-      vacuum_1_enable_pump = frame.data[0];
-      vacuum_1_release = frame.data[1];
-      vacuum_2_enable_pump = frame.data[2];
-      vacuum_2_release = frame.data[3];
-      /*
-      // old syntax, we do not respect the official format anymore, it is late and I want to sleep
-      a_digital_io_output = (frame.data[0] << 8) | frame.data[1];
-      a_enables = frame.data[2];*/
+      vacuum_1_enable_pump = frame.data[0] & (1 << 0);
+      bool vacuum_1_release = frame.data[0] & (1 << 1);
+      vacuum_2_enable_pump = frame.data[0] & (1 << 2);
+      bool vacuum_2_release = frame.data[0] & (1 << 3);
+
+      vacuum_3_enable_pump = frame.data[0] & (1 << 4);
+      bool vacuum_3_release = frame.data[0] & (1 << 5);
+      vacuum_4_enable_pump = frame.data[0] & (1 << 6);
+      bool vacuum_4_release = frame.data[0] & (1 << 7);
     }
     else if (frame.id == can_ids::AX12_W1)
     {
