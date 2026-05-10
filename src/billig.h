@@ -25,11 +25,16 @@ void initBillig(PersistentServo *myPersistentServos[])
                 Serial.println(myAX12s[i].id);
 
                 delay(100);
+                updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
+
                 dxl.ledOff(myAX12s[i].id);
             }
         }
         // delay(2000);
     }
+    delay(500);
+    updateDynamixels();
+    delay(500);
 
     Serial.println("Turn the servos to the default position");
 
