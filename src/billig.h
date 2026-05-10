@@ -42,9 +42,9 @@ void initBillig(PersistentServo *myPersistentServos[])
     {
         digitalWrite(SERVO_POWER_ENABLE_PIN, HIGH);
 
-        myPersistentServos[0]->angle = 30;  // 0 = endroit tout à droite
-        myPersistentServos[1]->angle = 0;   // 0 = endroit milieu droite
-        myPersistentServos[2]->angle = 0;   // 0 = endroit milieu gauche
+        myPersistentServos[0]->angle = 0;   // 0 = endroit tout à droite
+        myPersistentServos[1]->angle = 30;  // 0 = endroit milieu droite
+        myPersistentServos[2]->angle = 30;  // 0 = endroit milieu gauche
         myPersistentServos[3]->angle = 0;   // 0 = endroit tout à gauche
         myPersistentServos[4]->angle = 175; // 175 = doigt en bas
         myPersistentServos[5]->angle = 150;
