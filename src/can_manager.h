@@ -74,7 +74,12 @@ void setupCAN()
 
   settings.mRxPin = GPIO_NUM_48; // Optional, default Tx pin is GPIO_NUM_4
   settings.mTxPin = GPIO_NUM_47; // Optional, default Rx pin is GPIO_NUM_5
-  const uint32_t errorCode = ACAN_ESP32::can.begin(settings);
+
+  // Filter all message above 0x03F (i.e. only messages with ID 0x000 to 0x03F will be received)
+  // This is done in order to reduce the load on the ESP32, as it will not have to process messages that we are not interested in
+  const ACAN_ESP32_Filter filter = ACAN_ESP32_Filter::singleStandardFilter(ACAN_ESP32_Filter::data, 0x001, 0x03F);
+
+  const uint32_t errorCode = ACAN_ESP32::can.begin(settings, filter);
   if (errorCode != 0)
   {
     Serial.print("Configuration error 0x");
