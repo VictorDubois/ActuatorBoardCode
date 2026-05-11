@@ -150,12 +150,12 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     {
       stepper.disableOutputs();
     }*/
-    usleep(1000000);
+    usleep(100000);
     last_set_position = 0;
     stepper.enableOutputs();
 
     stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
-    stepper.move(1000 * steps_per_mm);
+    stepper.move(3000 * steps_per_mm);
 
     homingTimeout = millis() + 1500000;
     Serial.println("Start homing stepper");
@@ -169,16 +169,19 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
       }
       stepper.runSpeed();
     }
+    Serial.println("end stop or timeout reached");
     stepper.setCurrentPosition(0);
     stepper_info.homing_sequences_done++;
     homingHasJustBeenDone = true;
 
-    stepper.moveTo(-1 * steps_per_mm);
+    stepper.moveTo(-2 * steps_per_mm);
     while (stepper.run())
     {
+      Serial.println("+");
     }
     usleep(100000);
     stepperStruct.mode = stepper_mode::POSITION;
+    Serial.println("Homing done");
     // stepper.disableOutputs();
     break;
   default:

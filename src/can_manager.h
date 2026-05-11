@@ -112,7 +112,7 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
     gBlinkLedDate += 100;
     // digitalWrite (LED_BUILTIN, !digitalRead (LED_BUILTIN)) ;
 
-    bool l_print_debug = false;
+    bool l_print_debug = true;
     if (l_print_debug)
     {
       Serial.print("Sent: ");
@@ -259,6 +259,10 @@ void loopCAN(uint8_t &a_current_score, ServoMessage *SERVO_1_msg, ServoMessage *
       bool vacuum_3_release = frame.data[0] & (1 << 5);
       vacuum_4_enable_pump = frame.data[0] & (1 << 6);
       bool vacuum_4_release = frame.data[0] & (1 << 7);
+
+      // Hack to get the pumps on vaccum 2, and the release valves on vacuum 4
+      /*vacuum_2_enable_pump = frame.data[0] & (1 << 2);
+      vacuum_4_enable_pump = frame.data[1] & (1 << 1);*/
     }
     else if (frame.id == can_ids::AX12_W1)
     {

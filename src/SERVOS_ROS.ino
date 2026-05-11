@@ -194,6 +194,7 @@ int8_t vacuum_1_enable_pump = 0;
 int8_t vacuum_2_enable_pump = 0;
 int8_t vacuum_3_enable_pump = 0;
 int8_t vacuum_4_enable_pump = 0;
+uint8_t heartbeat = 0;
 
 void loop()
 {
@@ -298,4 +299,5 @@ void loop()
   // Serial.println(stepper_info.distance_to_go);
   // Serial.println(myPersistentServos[0]->angle);
   // Serial.println(current_score);
+  Serial.println(heartbeat++);
 }
