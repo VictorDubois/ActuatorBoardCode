@@ -230,7 +230,7 @@ void loop()
 
     // io.myDigitalWrite(SERVO_POWER_ENABLE_PIN, enables & (0x1 << 0));
 
-    for (int j = 0; j < 1; j++) // run loopCAN more often than slow I2C calls
+    for (int j = 0; j < 2; j++) // run loopCAN more often than slow I2C calls
     {
       // Serial.println("loopCan");
       loopCAN(current_score, &SERVO_1_msg, &SERVO_2_msg, &stepperStruct, &stepper_info, bat_power_voltage, bat_elec_voltage, digital_io_read, digital_io_output, enables, remaining_time_s, teamIsBlue,
@@ -265,7 +265,7 @@ void loop()
         io.myDigitalWrite(STEPPER_POWER_ENABLE_PIN, LOW);
       }
 
-      for (int i_timing_actuators = 0; i_timing_actuators < 5; i_timing_actuators++)
+      for (int i_timing_actuators = 0; i_timing_actuators < 1; i_timing_actuators++)
       {
         for (int i_steppers = 0; i_steppers < 20; i_steppers++) // run loopStepper more often than slow stuff
         {
@@ -275,7 +275,7 @@ void loop()
         updateServos(myPersistentServos);
         updateDynamixels();
       }
-      updateDynamixelsInfo();
+      // updateDynamixelsInfo();
     }
     // delay(5);
   }
