@@ -136,15 +136,36 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     }
 
     dxl.setGoalPosition(ax12_id, a_ax12_msg.position);
+    if (dxl.getLastLibErrCode() != 0)
+    {
+        Serial.print("Error setting position for AX12 ID ");
+        Serial.print(ax12_id);
+        Serial.print(": ");
+        Serial.println(dxl.getLastLibErrCode());
+    }
     usleep(1000);
 
     if (a_ax12_msg.torque_enable)
     {
         dxl.torqueOn(ax12_id);
+        if (dxl.getLastLibErrCode() != 0)
+        {
+            Serial.print("Error setting torqueOn for AX12 ID ");
+            Serial.print(ax12_id);
+            Serial.print(": ");
+            Serial.println(dxl.getLastLibErrCode());
+        }
     }
     else
     {
         dxl.torqueOff(ax12_id);
+        if (dxl.getLastLibErrCode() != 0)
+        {
+            Serial.print("Error setting torqueOff for AX12 ID ");
+            Serial.print(ax12_id);
+            Serial.print(": ");
+            Serial.println(dxl.getLastLibErrCode());
+        }
     }
     usleep(1000);
 
@@ -156,12 +177,26 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     if (a_ax12_msg.max_speed != -1)
     {
         dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed, UNIT_PERCENT);
+        if (dxl.getLastLibErrCode() != 0)
+        {
+            Serial.print("Error setting velocity for AX12 ID ");
+            Serial.print(ax12_id);
+            Serial.print(": ");
+            Serial.println(dxl.getLastLibErrCode());
+        }
     }
     usleep(1000);
 
     if (a_ax12_msg.currentLimit != -1)
     {
         dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
+        if (dxl.getLastLibErrCode() != 0)
+        {
+            Serial.print("Error setting current for AX12 ID ");
+            Serial.print(ax12_id);
+            Serial.print(": ");
+            Serial.println(dxl.getLastLibErrCode());
+        }
     }
 
     if (a_ax12_msg.temperatureLimit != -1)
