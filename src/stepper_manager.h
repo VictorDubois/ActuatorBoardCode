@@ -154,7 +154,9 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     last_set_position = 0;
     stepper.enableOutputs();
 
-    stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
+    // dont read from CAN anymore
+    // stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
+    stepper.setMaxSpeed(200 * steps_per_mm);
     stepper.move(3000 * steps_per_mm);
 
     homingTimeout = millis() + 1500000;
