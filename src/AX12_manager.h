@@ -187,17 +187,17 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     }
     usleep(1000);
 
-    if (a_ax12_msg.currentLimit != -1)
-    {
-        dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
-        if (dxl.getLastLibErrCode() != 0)
-        {
-            Serial.print("Error setting current for AX12 ID ");
-            Serial.print(ax12_id);
-            Serial.print(": ");
-            Serial.println(dxl.getLastLibErrCode());
-        }
-    }
+    // if (a_ax12_msg.currentLimit != -1)
+    // {
+    //     dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
+    //     if (dxl.getLastLibErrCode() != 0)
+    //     {
+    //         Serial.print("Error setting current for AX12 ID ");
+    //         Serial.print(ax12_id);
+    //         Serial.print(": ");
+    //         Serial.println(dxl.getLastLibErrCode());
+    //     }
+    // }
 
     if (a_ax12_msg.temperatureLimit != -1)
     {
