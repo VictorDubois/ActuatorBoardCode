@@ -165,7 +165,7 @@ void setup()
   Stepper stepperStructHoming;
   stepperStructHoming.current = 200; //*50mA
   stepperStructHoming.accel = 100;   // mm/s2
-  stepperStructHoming.speed = 30;    // mm/s
+  stepperStructHoming.speed = 60;    // mm/s
   stepperStructHoming.position = 0;  // mm
   stepperStructHoming.mode = stepper_mode::HOMING;
   // stepperStructHoming.mode = stepper_mode::POSITION;
