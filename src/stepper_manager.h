@@ -47,6 +47,7 @@ StepperInfo stepper_info;
 int32_t last_set_current = 0;
 int32_t last_set_position = 0;
 auto homingTimeout = millis() + 15000;
+auto movePostHomingTimeout = millis() + 2000;
 
 bool homingHasJustBeenDone = false;
 
@@ -176,8 +177,10 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     stepper_info.homing_sequences_done++;
     homingHasJustBeenDone = true;
 
+    movePostHomingTimeout = millis() + 2000;
+
     stepper.moveTo(-2 * steps_per_mm);
-    while (stepper.run())
+    while (stepper.run() && millis() < movePostHomingTimeout)
     {
       Serial.println("+");
     }
