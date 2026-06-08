@@ -3,7 +3,7 @@
  * Initializes the library and runs the stepper motor.
  */
 #pragma once
-#include <TMCStepper.h> // https://github.com/adafruit/Adafruit_MPU6050
+#include <TMCStepper.h> // https://github.com/teemuatlut/tmcstepper
 #include <HardwareSerial.h>
 #include <io_expender_manager.h>
 #include "CanStruct/can_structs.h"
@@ -37,8 +37,6 @@
                       // Panucatt BSD2660 uses 0.1
                       // Watterott TMC5160 uses 0.075
 
-// HardwareSerial MySerial0(0);
-
 TMC2208Stepper driver = TMC2208Stepper(&SERIAL_PORT, R_SENSE);
 
 constexpr uint32_t steps_per_mm = 41;
@@ -48,8 +46,6 @@ int32_t last_set_current = 0;
 int32_t last_set_position = 0;
 auto homingTimeout = millis() + 15000;
 auto movePostHomingTimeout = millis() + 2000;
-
-bool homingHasJustBeenDone = false;
 
 #include <AccelStepper.h>
 
@@ -83,6 +79,9 @@ void setupAccelStep(IOPotentiallyExpended io)
 StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
 {
 
+  // The current read is not exacly the current we set
+  // So this simple test does not work, and we end up setting the current all the time, which takes too long
+  // This should be investigated and fixed.
   // if(driver.rms_current() != stepperStruct.current * to_mA_accel)
   {
     /*Serial.println("Set rms_current to :");
@@ -100,7 +99,6 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     stepper.disableOutputs();
     break;
   case stepper_mode::POSITION:
-    homingHasJustBeenDone = false;
     stepper.enableOutputs();
 
     /*if (stepper.acceleration() != stepperStruct.accel * steps_per_mm)
@@ -138,7 +136,6 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     stepper_info.distance_to_go = stepper.distanceToGo() / steps_per_mm;
     break;
   case stepper_mode::SPEED:
-    homingHasJustBeenDone = false;
     last_set_position = 0;
     stepper.enableOutputs();
     stepper.setSpeed(stepperStruct.speed * steps_per_mm);
@@ -147,15 +144,12 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     stepper.runSpeed();
     break;
   case stepper_mode::HOMING:
-    /*if (homingHasJustBeenDone)
-    {
-      stepper.disableOutputs();
-    }*/
     usleep(100000);
     last_set_position = 0;
     stepper.enableOutputs();
 
-    // dont read from CAN anymore
+    // dont read from CAN anymore, because is was too low.
+    // idealy, we would like to set a minimum, but allow even faster homing
     // stepper.setSpeed(-stepperStruct.speed * steps_per_mm);
     stepper.setMaxSpeed(200 * steps_per_mm);
     stepper.move(3000 * steps_per_mm);
@@ -175,7 +169,6 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     Serial.println("end stop or timeout reached");
     stepper.setCurrentPosition(0);
     stepper_info.homing_sequences_done++;
-    homingHasJustBeenDone = true;
 
     movePostHomingTimeout = millis() + 2000;
 
@@ -187,7 +180,7 @@ StepperInfo loopStepper(Stepper &stepperStruct, IOPotentiallyExpended io)
     usleep(100000);
     stepperStruct.mode = stepper_mode::POSITION;
     Serial.println("Homing done");
-    // stepper.disableOutputs();
+    // Do not disable outputs, otherwise the evelator drops, which kills the calibration
     break;
   default:
     last_set_position = 0;

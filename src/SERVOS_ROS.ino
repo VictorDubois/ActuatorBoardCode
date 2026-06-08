@@ -168,7 +168,6 @@ void setup()
   stepperStructHoming.speed = 60;    // mm/s
   stepperStructHoming.position = 0;  // mm
   stepperStructHoming.mode = stepper_mode::HOMING;
-  // stepperStructHoming.mode = stepper_mode::POSITION;
   loopStepper(stepperStructHoming, io);
 
   Serial.println("Homing done");

@@ -7,31 +7,27 @@ void initBillig(PersistentServo *myPersistentServos[])
 {
     // Init AX12 positions to closed
     Serial.println("Init AX12 positions to closed");
+
+    for (int i = 0; i < NB_AX12; i++)
     {
-        // while (true)
-        {
-            for (int i = 0; i < NB_AX12; i++)
-            {
-                myAX12s[i].commands.position = 0;
-                myAX12s[i].commands.currentLimit = 100;
-                myAX12s[i].commands.max_accel = 100;
-                myAX12s[i].commands.max_speed = 100;
-                myAX12s[i].commands.torque_enable = 1;
+        myAX12s[i].commands.position = 0;
+        myAX12s[i].commands.currentLimit = 100;
+        myAX12s[i].commands.max_accel = 100;
+        myAX12s[i].commands.max_speed = 100;
+        myAX12s[i].commands.torque_enable = 1;
 
-                updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
+        updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
 
-                dxl.ledOn(myAX12s[i].id);
-                Serial.print("AX12 ID: ");
-                Serial.println(myAX12s[i].id);
+        dxl.ledOn(myAX12s[i].id);
+        Serial.print("AX12 ID: ");
+        Serial.println(myAX12s[i].id);
 
-                delay(100);
-                updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
+        delay(100);
+        updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
 
-                dxl.ledOff(myAX12s[i].id);
-            }
-        }
-        // delay(2000);
+        dxl.ledOff(myAX12s[i].id);
     }
+
     delay(500);
     updateDynamixels();
     delay(500);
@@ -57,18 +53,17 @@ void initBillig(PersistentServo *myPersistentServos[])
         }
     }
 
-    Serial.println("close AX12s");
+    Serial.println("open AX12s");
     // Init AX12 positions to open
+    for (int i = 0; i < NB_AX12; i++)
     {
-        for (int i = 0; i < NB_AX12; i++)
-        {
-            myAX12s[i].commands.position = 800;
-            myAX12s[i].commands.currentLimit = 50;
-            myAX12s[i].commands.max_accel = 100;
-            myAX12s[i].commands.max_speed = 100;
-            myAX12s[i].commands.torque_enable = 1;
-            updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
-        }
+        myAX12s[i].commands.position = 800;
+        myAX12s[i].commands.currentLimit = 50;
+        myAX12s[i].commands.max_accel = 100;
+        myAX12s[i].commands.max_speed = 100;
+        myAX12s[i].commands.torque_enable = 1;
+        updateDynamixel(myAX12s[i].commands, myAX12s[i].id);
     }
+
     Serial.println("Grabbers init done");
 }
