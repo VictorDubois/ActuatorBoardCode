@@ -187,18 +187,6 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     }
     usleep(1000);
 
-    // if (a_ax12_msg.currentLimit != -1)
-    // {
-    //     dxl.setGoalCurrent(ax12_id, a_ax12_msg.currentLimit, UNIT_PERCENT);
-    //     if (dxl.getLastLibErrCode() != 0)
-    //     {
-    //         Serial.print("Error setting current for AX12 ID ");
-    //         Serial.print(ax12_id);
-    //         Serial.print(": ");
-    //         Serial.println(dxl.getLastLibErrCode());
-    //     }
-    // }
-
     if (a_ax12_msg.currentLimit != -1)
     {
         if (a_ax12_msg.currentLimit > 100)
@@ -207,7 +195,7 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
         }
         // AX-12A Torque Limit: address 34, 2 bytes, range 0-1023
         uint16_t torque_limit = (uint16_t)(a_ax12_msg.currentLimit * 1023 / 100);
-        dxl.write(ax12_id, 34, (uint8_t*)&torque_limit, 2);
+        dxl.write(ax12_id, 34, (uint8_t *)&torque_limit, 2);
         if (dxl.getLastLibErrCode() != 0)
         {
             Serial.print("Error setting torque limit for AX12 ID ");
@@ -216,7 +204,7 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
             Serial.println(dxl.getLastLibErrCode());
         }
     }
-    
+
     if (a_ax12_msg.temperatureLimit != -1)
     {
         // dxl.setTemperatureLimit(ax12_id, a_ax12_msg.temperatureLimit);
