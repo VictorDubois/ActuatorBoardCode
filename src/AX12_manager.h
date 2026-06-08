@@ -102,6 +102,20 @@ void setupDynamixel()
     }
 }
 
+void errorManager(const char *a_last_action, uint8_t ax12_id = 0)
+{
+    const DXLLibErrorCode_t last_error_code = dxl.getLastLibErrCode();
+    if (last_error_code != 0)
+    {
+        Serial.print("Dynamixel error during ");
+        Serial.print(a_last_action);
+        Serial.print(": ");
+        Serial.print(last_error_code);
+        Serial.print(", on AX12 ID ");
+        Serial.println(ax12_id);
+    }
+}
+
 void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
 {
     // a_ax12_msg.mode == // by default, they are all in position mode
@@ -136,36 +150,18 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     }
 
     dxl.setGoalPosition(ax12_id, a_ax12_msg.position);
-    if (dxl.getLastLibErrCode() != 0)
-    {
-        Serial.print("Error setting position for AX12 ID ");
-        Serial.print(ax12_id);
-        Serial.print(": ");
-        Serial.println(dxl.getLastLibErrCode());
-    }
+    errorManager("setGoalPosition", ax12_id);
     usleep(1000);
 
     if (a_ax12_msg.torque_enable)
     {
         dxl.torqueOn(ax12_id);
-        if (dxl.getLastLibErrCode() != 0)
-        {
-            Serial.print("Error setting torqueOn for AX12 ID ");
-            Serial.print(ax12_id);
-            Serial.print(": ");
-            Serial.println(dxl.getLastLibErrCode());
-        }
+        errorManager("torqueOn", ax12_id);
     }
     else
     {
         dxl.torqueOff(ax12_id);
-        if (dxl.getLastLibErrCode() != 0)
-        {
-            Serial.print("Error setting torqueOff for AX12 ID ");
-            Serial.print(ax12_id);
-            Serial.print(": ");
-            Serial.println(dxl.getLastLibErrCode());
-        }
+        errorManager("torqueOff", ax12_id);
     }
     usleep(1000);
 
@@ -177,13 +173,7 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     if (a_ax12_msg.max_speed != -1)
     {
         dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed, UNIT_PERCENT);
-        if (dxl.getLastLibErrCode() != 0)
-        {
-            Serial.print("Error setting velocity for AX12 ID ");
-            Serial.print(ax12_id);
-            Serial.print(": ");
-            Serial.println(dxl.getLastLibErrCode());
-        }
+        errorManager("setGoalVelocity", ax12_id);
     }
     usleep(1000);
 
@@ -196,13 +186,7 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
         // AX-12A Torque Limit: address 34, 2 bytes, range 0-1023
         uint16_t torque_limit = (uint16_t)(a_ax12_msg.currentLimit * 1023 / 100);
         dxl.write(ax12_id, 34, (uint8_t *)&torque_limit, 2);
-        if (dxl.getLastLibErrCode() != 0)
-        {
-            Serial.print("Error setting torque limit for AX12 ID ");
-            Serial.print(ax12_id);
-            Serial.print(": ");
-            Serial.println(dxl.getLastLibErrCode());
-        }
+        errorManager("setTorqueLimit", ax12_id);
     }
 
     if (a_ax12_msg.temperatureLimit != -1)
@@ -220,13 +204,7 @@ void updateDynamixelInfo(CAN::AX12Read &a_ax12_msg, uint8_t ax12_id)
     usleep(10000);
     l_position = dxl.getPresentPosition(ax12_id, UNIT_RAW); // Second read because the first one is often wrong for some reason
     a_ax12_msg.current_position = static_cast<uint16_t>(l_position);
-    if (dxl.getLastLibErrCode() != 0)
-    {
-        Serial.print("Error getting position for AX12 ID ");
-        Serial.print(ax12_id);
-        Serial.print(": ");
-        Serial.println(dxl.getLastLibErrCode());
-    }
+    errorManager("getPresentPosition", ax12_id);
 
     usleep(10000);
 
@@ -239,13 +217,7 @@ void updateDynamixelInfo(CAN::AX12Read &a_ax12_msg, uint8_t ax12_id)
     usleep(10000);
     l_velocity = dxl.getPresentVelocity(ax12_id, UNIT_RAW); // Second read because the first one is often wrong for some reason
     a_ax12_msg.moving = static_cast<uint8_t>(l_velocity / 10);
-    if (dxl.getLastLibErrCode() != 0)
-    {
-        Serial.print("Error getting velocity for AX12 ID ");
-        Serial.print(ax12_id);
-        Serial.print(": ");
-        Serial.println(dxl.getLastLibErrCode());
-    }
+    errorManager("getPresentVelocity", ax12_id);
 
     a_ax12_msg.mode = 1; // dxl.mode(ax12_id);
     usleep(10000);
