@@ -112,7 +112,11 @@ void errorManager(const char *a_last_action, uint8_t ax12_id = 0, uint8_t hardwa
     if (last_error_code != 0)
     {
         myAX12s[ax12_id].lastErrorTimestamp = millis();
-        myAX12s[ax12_id].hardwareErrorId = hardwareErrorId;
+        myAX12s[ax12_id].hardwareErrorId = last_error_code;
+        if (last_error_code == DXL_LIB_ERROR_NOT_SUPPORTED)
+        {
+            myAX12s[ax12_id].hardwareErrorId = 200 + hardwareErrorId; // To tell which message is not supported
+        }
         Serial.print("Dynamixel error during ");
         Serial.print(a_last_action);
         Serial.print(": ");
