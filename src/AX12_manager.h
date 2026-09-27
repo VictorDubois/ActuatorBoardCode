@@ -20,6 +20,7 @@ ESP32SerialPortHandler esp_dxl_port(DYNAMIXEL_SERIAL, DYNAMIXEL_SERIAL_RX_pin, D
 
 uint8_t sequenced_updates_servo = 0;      // Do not update everything all at once
 uint8_t sequenced_updates_subcommand = 0; // Do not update everything all at once
+uint8_t sequenced_infos_servo = 0;        // Do not update everything all at once
 
 enum AX12_subcommand
 {
@@ -252,8 +253,11 @@ void updateDynamixels()
 
 void updateDynamixelsInfo()
 {
-    for (int i = 0; i < NB_AX12; i++)
+    uint8_t i_servo = sequenced_infos_servo;
+    updateDynamixelInfo(myAX12s[i_servo].infos, myAX12s[i_servo].id);
+    sequenced_infos_servo++;
+    if (sequenced_infos_servo >= NB_AX12)
     {
-        updateDynamixelInfo(myAX12s[i].infos, myAX12s[i].id);
+        sequenced_infos_servo = 0;
     }
 }

@@ -275,7 +275,7 @@ void loop()
         updateServos(myPersistentServos);
         updateDynamixels();
       }
-      // updateDynamixelsInfo();
+      updateDynamixelsInfo();
     }
     // delay(5);
   }
