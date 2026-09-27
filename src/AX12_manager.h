@@ -38,6 +38,8 @@ struct AX12
     int8_t id;
     CAN::AX12Read infos;
     CAN::AX12Write commands;
+    uint32_t lastErrorTimestamp;
+    uint8_t hardwareErrorId;
 
     AX12(int8_t a_id) : id(a_id)
     {
@@ -55,6 +57,8 @@ struct AX12
         infos.hardwareErrorStatus = 0;
         infos.moving = 0;
         infos.mode = 1;
+
+        lastErrorTimestamp = 0;
     }
 };
 
@@ -102,11 +106,13 @@ void setupDynamixel()
     }
 }
 
-void errorManager(const char *a_last_action, uint8_t ax12_id = 0)
+void errorManager(const char *a_last_action, uint8_t ax12_id = 0, uint8_t hardwareErrorId = -1)
 {
     const DXLLibErrorCode_t last_error_code = dxl.getLastLibErrCode();
     if (last_error_code != 0)
     {
+        myAX12s[ax12_id].lastErrorTimestamp = millis();
+        myAX12s[ax12_id].hardwareErrorId = hardwareErrorId;
         Serial.print("Dynamixel error during ");
         Serial.print(a_last_action);
         Serial.print(": ");
@@ -150,18 +156,18 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     }
 
     dxl.setGoalPosition(ax12_id, a_ax12_msg.position);
-    errorManager("setGoalPosition", ax12_id);
+    errorManager("setGoalPosition", ax12_id, 1);
     usleep(1000);
 
     if (a_ax12_msg.torque_enable)
     {
         dxl.torqueOn(ax12_id);
-        errorManager("torqueOn", ax12_id);
+        errorManager("torqueOn", ax12_id, 2);
     }
     else
     {
         dxl.torqueOff(ax12_id);
-        errorManager("torqueOff", ax12_id);
+        errorManager("torqueOff", ax12_id, 3);
     }
     usleep(1000);
 
@@ -173,7 +179,7 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
     if (a_ax12_msg.max_speed != -1)
     {
         dxl.setGoalVelocity(ax12_id, a_ax12_msg.max_speed, UNIT_PERCENT);
-        errorManager("setGoalVelocity", ax12_id);
+        errorManager("setGoalVelocity", ax12_id, 4);
     }
     usleep(1000);
 
@@ -186,7 +192,7 @@ void updateDynamixel(CAN::AX12Write a_ax12_msg, uint8_t ax12_id)
         // AX-12A Torque Limit: address 34, 2 bytes, range 0-1023
         uint16_t torque_limit = (uint16_t)(a_ax12_msg.currentLimit * 1023 / 100);
         dxl.write(ax12_id, 34, (uint8_t *)&torque_limit, 2);
-        errorManager("setTorqueLimit", ax12_id);
+        errorManager("setTorqueLimit", ax12_id, 5);
     }
 
     if (a_ax12_msg.temperatureLimit != -1)
@@ -204,20 +210,26 @@ void updateDynamixelInfo(CAN::AX12Read &a_ax12_msg, uint8_t ax12_id)
     usleep(10000);
     l_position = dxl.getPresentPosition(ax12_id, UNIT_RAW); // Second read because the first one is often wrong for some reason
     a_ax12_msg.current_position = static_cast<uint16_t>(l_position);
-    errorManager("getPresentPosition", ax12_id);
+    errorManager("getPresentPosition", ax12_id, 6);
 
     usleep(10000);
 
     a_ax12_msg.presentCurrent = -1;
     // dxl.getPresentCurrent(ax12_id); // Not supported by AX12
     a_ax12_msg.presentTemperature = -1; // dxl.getPresentTemperature(ax12_id);
-    a_ax12_msg.hardwareErrorStatus = 0; // dxl.hardwareErrorStatus(ax12_id);
+    a_ax12_msg.hardwareErrorStatus = 0;
+    if (myAX12s[ax12_id].lastErrorTimestamp + 1000 < millis())
+    {
+        // If there has been an error recently, send the corresponding ID for diagnostics.
+        // For more details, see the serial monitor
+        a_ax12_msg.hardwareErrorStatus = myAX12s[ax12_id].hardwareErrorId;
+    }
     float l_velocity = dxl.getPresentVelocity(ax12_id, UNIT_RAW);
     a_ax12_msg.moving = static_cast<uint8_t>(l_velocity / 10);
     usleep(10000);
     l_velocity = dxl.getPresentVelocity(ax12_id, UNIT_RAW); // Second read because the first one is often wrong for some reason
     a_ax12_msg.moving = static_cast<uint8_t>(l_velocity / 10);
-    errorManager("getPresentVelocity", ax12_id);
+    errorManager("getPresentVelocity", ax12_id, 7);
 
     a_ax12_msg.mode = 1; // dxl.mode(ax12_id);
     usleep(10000);
